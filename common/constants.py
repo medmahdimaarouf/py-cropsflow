@@ -41,12 +41,8 @@ DATAPIPE_DECORATOR_ACCUMULATORS_KEY = "_datapipe_accumulators_"
 TASK_DECORATOR_TEMPLATE_URI_KEY = "_task_template_url_"
 TASK_DECORATOR_TEMPLATE_KEY = "_task_template_"
 
-# Injection DECORATOR Keys
-INJECT_DECORATOR_KEY = "_inject_arg_key_"
-INJECT_CONSTRUCTOR_DEPENDENCY_KEY = "_inject_constructor_dependency_key_"
-INJECT_DEPENDENCY_FN_PARAMS_KEY = "_inject_dependency_function_params_key_"
-INJECT_PROPERTY_DEPENDENCY_KEY = "_inject_property_dependency_key_"
-INJECT_METHOD_DEPENDENCY_KEY = "_inject_factory_provider_key_"
+# Inject DECORATOR Keys
+INJECT_FN_DEPENDENCY_KEY = "__inject_method_dependencies__"
 
 # Resource Paths
 RESOURCES_PATH_PROVIDER_TOKEN = "_resources_path_provider_token_"

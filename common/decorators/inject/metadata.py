@@ -5,35 +5,23 @@ from typing import Optional, Type, Any
 from common.utils import InjectionToken
 
 
-class Scope(Enum):
+class InjectionScope(Enum):
     DEFAULT = 0
     TRANSIENT = 1
     REQUEST = 2
 
 
 @dataclass
-class InjectionScope:
-    scope: Scope
+class InjectMetaData:
+    scope: InjectionScope
     optional: bool
     skip_self: bool
+    token: InjectionToken
 
-
-class Scope:
-    DEFAULT = 0
-    TRANSIENT = 1
-    REQUEST = 2
-
-
-class InjectionScope:
-    def __init__(self, scope: int = Scope.DEFAULT, optional: bool = False, skip_self: bool = False):
+    def __init__(self, token: InjectionToken = None, scope: InjectionScope = InjectionScope.DEFAULT,
+                 optional: bool = False,
+                 skip_self: bool = False):
+        self.token = token
         self.scope = scope
         self.optional = optional
         self.skip_self = skip_self
-
-
-class InjectMetaData:
-    def __init__(self, type: str, token: Optional[InjectionToken], scope: Optional[InjectionScope], ctr: Type):
-        self.type = type
-        self.token = token
-        self.scope = scope
-        self.ctr = ctr

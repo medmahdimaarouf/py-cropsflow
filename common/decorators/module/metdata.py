@@ -20,15 +20,21 @@ class ValueProviderMetaData(ProviderMetaData):
     useValue: Any
 
 
-ProviderDef = Union[str, Type, ProviderMetaData]
+ProviderDef = Union[Type, ProviderMetaData]
 
 
-class ModuleWithProviders:
+class DynamicModule:
     providers: List[ProviderDef]
     module: Type[Any]
+    is_global: bool
+
+    def __init__(self, module: Type[Any], provider: Type[ProviderDef], is_global: bool):
+        self.module = module
+        self.provider = provider
+        self.is_global = is_global
 
 
-ModuleDef = Union[ForwardRef, Type[Any], ModuleWithProviders, Callable]
+ModuleDef = Union[ForwardRef, Type[Any], DynamicModule, Callable]
 ExportDef = Union[str, Type[Any]]
 
 

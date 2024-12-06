@@ -6,5 +6,7 @@ from .decorator_metadata_type import *
 
 @dataclass
 class DecoratorMetaData:
-    ctr: Type[Any]
+    target: Type[Any]
     type: DecoratorMetaDataType = "class"
+
+
