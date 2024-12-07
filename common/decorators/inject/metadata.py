@@ -8,7 +8,6 @@ from common.utils import InjectionToken
 class InjectionScope(Enum):
     DEFAULT = 0
     TRANSIENT = 1
-    REQUEST = 2
 
 
 @dataclass

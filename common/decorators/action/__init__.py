@@ -1,22 +1,12 @@
 from functools import wraps
 from typing import Callable, Any
 
+from common.constants import *
 from .metadata import *
 from .option_metadata import *
 
-from functools import wraps
-from common.constants import *
-
 
 def PrxAction(selector: str) -> Callable:
-    """
-    This Action decorator
-    Parameters:
-    selector (str): The selector of the action.
-    """
-
-
-def PrxPipe(selector: str) -> Callable:
     """
     This Action decorator
     Parameters:

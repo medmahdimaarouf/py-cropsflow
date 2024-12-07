@@ -1,4 +1,4 @@
-from core.injector.resolve_status import ResolveStatus
+from core.abstracts import ResolveStatus
 from common.decorators import InjectionScope
 from core.inspector import Inspector
 

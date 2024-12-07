@@ -1,10 +1,10 @@
 from common.schemas import DecoratorMetaData
-from ..inject import InjectionMetaData
+from ..inject import InjectionScope
 
 
 class ServiceDecoratorMetaData(DecoratorMetaData):
-    scope: InjectionMetaData
+    scope: InjectionScope
 
-    def __init__(self, scope: InjectionMetaData = None):
+    def __init__(self, scope: InjectionScope = None):
         self.type = "service"
         self.scope = scope

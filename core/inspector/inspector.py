@@ -15,7 +15,7 @@ class Inspector:
     groups: Dict[InjectionToken, Any] = {}
     global_modules: List[Module] = []
     global_tasks: Dict[InjectionToken, Any] = []
-    container: Container = Container()
+    container: Container
 
     def __int__(self, container: Container):
         self.container = container

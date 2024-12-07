@@ -40,7 +40,7 @@ def scanDataPipeMetaData(meta_type: Type[Any]) -> DataPipeDecoratorMetaData:
 
 def scanServiceMetaData(meta_type: Type[Any]) -> ServiceDecoratorMetaData:
     if isDecorated(meta_type, INJECTABLE_WATERMARK):
-        return ServiceDecoratorMetaData(selector=getattr(meta_type, INJECTABLE_DECORATOR_PROVIDER_HOST_KEY, ""))
+        return ServiceDecoratorMetaData(selector=getattr(meta_type, INJECTABLE_DECORATOR_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not a @Service")
 

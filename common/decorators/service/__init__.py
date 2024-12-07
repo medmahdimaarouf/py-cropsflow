@@ -2,9 +2,10 @@ from typing import Callable, Union, Type, Any
 
 from .metadata import *
 from common.constants import *
+from ..inject import InjectionScope
 
 
-def Service(provide_in: Union[str, Type[Any]]) -> Callable:
+def Service(scope: InjectionScope) -> Callable:
     """
     This Action decorator
     Parameters:
@@ -18,7 +19,7 @@ def Service(provide_in: Union[str, Type[Any]]) -> Callable:
         else:
             raise Exception("Duplicated Injectable decorator")
         setattr(cls, DECORATOR_WATERMARKS, watermarks)
-        setattr(cls, INJECTABLE_DECORATOR_PROVIDER_HOST_KEY, provide_in)
+        setattr(cls, INJECTABLE_DECORATOR_KEY, ServiceDecoratorMetaData(scope=scope))
         return cls
 
     return decorator

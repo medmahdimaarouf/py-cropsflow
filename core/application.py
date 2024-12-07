@@ -4,14 +4,14 @@ from common.utils import InjectionToken
 from core.injector.container import Container
 from core.injector.injector import Injector
 from core.injector.module import Module
-from common.decorators import ModuleDecoratorMetaData
+from common.decorators import InjectionScope, Service
 
 
+@Service(scope=InjectionScope.DEFAULT)
 class Application:
-    container: Container
 
-    def __init__(self, container: Container):
-        self.container = container
+    def __init__(self):
+        pass#self.container.register(Application, self)
 
     def group(self, path: str):
         pass

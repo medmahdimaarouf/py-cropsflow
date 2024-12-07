@@ -1,37 +1,44 @@
 from typing import Type, Any
 
+from common.abstracts import Init
+from common.decorators import TaskDecoratorMetaData
+from core.application import Application
 from core.injector import load_dependencies
-from core.injector.container import Container
-from core.injector.resolve_status import ResolveStatus
 from core.inspector import Inspector
 from core.scanner.dependency_scanner import DependencyScanner
-from common.decorators import InjectionScope
-from common.abstracts import Init
+from .builder.task_parser import build_task
+
+
+def initialize_modules(inspector: Inspector):
+    load_dependencies(inspector)
+    for module in inspector.modules.values():
+        instance: Init = module.get().resolve()
+        if issubclass(type(instance), Init):
+            instance.init(**module.injector.resolve_all())
+
+
+def build_tasks(inspector: Inspector):
+    for module in inspector.get_modules(dynamic=False):
+        def errorCallback(e: Exception):
+            print(str(e))
+
+        for dep in module.deps.values():
+            if isinstance(dep.metadata, TaskDecoratorMetaData):
+                build_task(dep, errorCallback)
 
 
 class ApplicationFactory:
-    inspector: Inspector = Inspector()
-    scanner: DependencyScanner = DependencyScanner(inspector)
-    container: Container
 
-    def __init__(self):
-        self.container = Container()
-        self.inspector = Inspector()
-        self.scanner = DependencyScanner(self.inspector)
-
-    def init(self, t: Type[Any]):
+    def init(self, t: Type[Any]) -> Application:
+        application: Application = Application()
+        inspector = Inspector(application.container)
+        scanner = DependencyScanner(inspector)
         try:
             print("Initializing ...")
-            self.scanner.scan(t)
+            scanner.scan(t)
             print('Modules initializing...')
-            self._initialize_modules()
+            initialize_modules(inspector)
             print('Building tasks ...')
+            build_tasks(inspector)
         except Exception as e:
             print(str(e))
-
-    def _initialize_modules(self):
-        load_dependencies(self.inspector)
-        for module in self.inspector.modules.values():
-            instance: Init = module.get().resolve()
-            if issubclass(type(instance), Init):
-                instance.init()

@@ -1,22 +1,22 @@
-from core.injector.container import Container
+from inspect import Parameter
+
 from common.decorators import *
 from common.utils import stringify_injection_token
-from .resolve_status import ResolveStatus
+from ..abstracts import BaseInjector, ResolveStatus
+from ..abstracts.base_container import BaseContainer
 from ..exceptions import CircularDependenciesException
 
 T = TypeVar('T')
 
 
-class Injector(Generic[T]):
-    instance: T = None
-    container: Container
-    resolve_status: ResolveStatus = ResolveStatus.NONE
+class Injector(Generic[T], BaseInjector[T]):
 
-    def __init__(self, container: Container):
+    def __init__(self, container: BaseContainer = None, instance: T = None):
         self.container = container
-        self.resolve_status = ResolveStatus.NONE if self.container.metadata is not None else ResolveStatus.RESOLVED
+        self.instance = instance
+        self.resolve_status = ResolveStatus.NONE if not self.instance else ResolveStatus.RESOLVED
 
-    def resolve(self, token: InjectionToken = None, scope: InjectionScope = None) -> T:
+    def resolve(self, token: InjectionToken = None, scope: InjectionScope = None, optional: bool = False) -> T:
         if token is None:
             if self.resolve_status == ResolveStatus.NONE:
                 self.resolve_status = ResolveStatus.PENDING
@@ -65,7 +65,45 @@ class Injector(Generic[T]):
                 raise e
 
     def resolve_all(self, tokens: List[str]) -> Dict[str, Any]:
-        pass
+        instances: Dict[str, Any] = {}
+        for token in tokens:
+            instances[token] = self.resolve(token)
+        return instances
+
+    def _get_fn_deps(self, fn: Callable) -> Dict[str, InjectionToken]:
+        # Get all the parameters of the function
+        args: Dict[str, Parameter] = inspect.signature(fn).parameters
+
+        # Get the injection metadata attached to the function
+        injects: Dict[str, InjectMetaData] = getattr(fn, INJECT_FN_DEPENDENCY_KEY, {})
+
+        # Map arguments to their corresponding injection tokens
+        fn_deps: Dict[str, InjectionToken] = {}
+        for arg_name, param in args.items():
+            # Check if the parameter has explicit InjectMetaData
+            inject_meta: InjectMetaData = injects.get(arg_name)
+
+            if inject_meta:
+                # Use the token from InjectMetaData
+                fn_deps[arg_name] = inject_meta.token
+            else:
+                # If no InjectMetaData is provided, fall back to the type annotation
+                if param.annotation is not Parameter.empty:
+                    fn_deps[arg_name] = param.annotation
+                else:
+                    raise ValueError(f"Cannot resolve dependency for argument '{arg_name}' in function '{fn.__name__}'")
+
+        return fn_deps
 
 
-NULL_INJECTOR = Injector(Container(None))
+class NullInjector(BaseInjector):
+    resolve_status = ResolveStatus.NONE
+
+    def resolve(self, token: InjectionToken = None, scope: InjectionScope = None, optional: bool = False) -> T:
+        if optional:
+            return None
+        else:
+            raise Exception(f'Null injector found for {stringify_injection_token(token)}')
+
+
+NULL_INJECTOR = NullInjector()

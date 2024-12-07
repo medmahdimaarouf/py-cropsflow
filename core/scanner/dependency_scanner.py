@@ -23,7 +23,7 @@ class DependencyScanner:
         self.scan_dependencies()
         self.bind_dependencies()
 
-    def scan_module(self, module_def: ModuleDef) -> Module:
+    async def scan_module(self, module_def: ModuleDef) -> Module:
         if is_function(module_def) or isinstance(module_def, ForwardRef[Any]):
             module_def = await module_def()
         wrap: DependencyWrap[Module] = None
@@ -93,7 +93,7 @@ class DependencyScanner:
                         raise f'Dependency {token} clashes with {module.exports.get(token)} in import {imported_module.metadata.target.__name__}'
         if len(module.exports) and module.is_global:
             for token, dep in module.exports.items():
-                self.container.add(token, dep)
+                self.container.register(token, dep)
 
 
 '''
