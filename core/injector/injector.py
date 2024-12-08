@@ -10,10 +10,12 @@ T = TypeVar('T')
 
 
 class Injector(Generic[T], BaseInjector[T]):
+    container: "BaseContainer"
+    resolve_status: ResolveStatus = ResolveStatus.NONE
 
     def __init__(self, container: BaseContainer = None, instance: T = None):
-        self.container = container
         self.instance = instance
+        self.container = container
         self.resolve_status = ResolveStatus.NONE if not self.instance else ResolveStatus.RESOLVED
 
     def resolve(self, token: InjectionToken = None, scope: InjectionScope = None, optional: bool = False) -> T:
@@ -45,9 +47,12 @@ class Injector(Generic[T], BaseInjector[T]):
 
         return instance
 
+    def resolve_injectable(self, meta_data: ServiceDecoratorMetaData):
+        return None
+
     def resolve_class_provider(self, class_provider: ClassProviderMetaData) -> T:
         try:
-            pass
+            return None
         except CircularDependenciesException as e:
             if self.resolve_status == ResolveStatus.PENDING:
                 raise CircularDependenciesException(stringify_injection_token(class_provider), self.container.name)
@@ -56,7 +61,7 @@ class Injector(Generic[T], BaseInjector[T]):
 
     def resolve_factory_provider(self, factory_provider: FactoryProviderMetaData) -> T:
         try:
-            pass
+            return None
         except CircularDependenciesException as e:
             if self.resolve_status == ResolveStatus.PENDING:
                 raise CircularDependenciesException(stringify_injection_token(factory_provider.provide),

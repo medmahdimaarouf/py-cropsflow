@@ -7,17 +7,32 @@ from common.utils import InjectionToken
 class ProviderMetaData:
     provide: InjectionToken
 
+    def __init__(self, provide: InjectionToken):
+        self.provide = provide
+
 
 class ClassProviderMetaData(ProviderMetaData):
     useClass: Type
+
+    def __init__(self, provide: InjectionToken, useClass: Type):
+        super().__init__(provide=provide)
+        self.useClass = useClass
 
 
 class FactoryProviderMetaData(ProviderMetaData):
     useFactory: Callable
 
+    def __init__(self, provide: InjectionToken, useFactory: Callable):
+        super().__init__(provide=provide)
+        self.useFactory = useFactory
+
 
 class ValueProviderMetaData(ProviderMetaData):
     useValue: Any
+
+    def __init__(self, provide: InjectionToken, useValue: Any):
+        super().__init__(provide=provide)
+        self.useValue = useValue
 
 
 ProviderDef = Union[Type, ProviderMetaData]

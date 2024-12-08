@@ -37,8 +37,8 @@ class ApplicationFactory:
             print("Initializing ...")
             scanner.scan(t)
             print('Modules initializing...')
-            #initialize_modules(inspector)
+            initialize_modules(inspector)
             print('Building tasks ...')
-            #build_tasks(inspector)
+            build_tasks(inspector)
         except Exception as e:
             raise e

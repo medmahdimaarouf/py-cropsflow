@@ -2,7 +2,7 @@ import uuid
 from inspect import isclass
 from typing import Dict, Generic, TypeVar, Union
 
-from common.decorators import ProviderMetaData
+from common.decorators import ProviderMetaData, ValueProviderMetaData
 from common.schemas import DecoratorMetaData
 from common.utils import InjectionToken, stringify_injection_token
 from .injector import Injector, NULL_INJECTOR
@@ -13,12 +13,19 @@ T = TypeVar('T')
 
 
 class Container(Generic[T], BaseContainer[T]):
+    id: str
+    injector: "BaseInjector"
+    metadata: DecoratorMetaData
+    host: "BaseContainer"
+    deps: Dict[InjectionToken, "BaseContainer"]
 
     def __init__(self, metadata: DecoratorMetaData, instance: T = None, host: BaseContainer = None):
-        self.id = str(uuid.uuid4())
-        self.metadata = metadata
-        self.host = host
-        self.injector = Injector(self, instance=instance)
+        self.id = str(uuid.uuid4())  # Generate a unique ID for the object
+        self.injector = Injector(self, instance=instance)  # Initialize the injector
+        self.metadata = metadata  # Store the metadata
+        self.host = host  # Set the host container
+        # Initialize the deps dictionary with Injector as the key and Container as the value
+        self.deps = {}  # Instantiate Container
 
     def get_name(self):
         if isinstance(self.metadata, ProviderMetaData):
@@ -41,11 +48,11 @@ class Container(Generic[T], BaseContainer[T]):
             raise ValueError(
                 f"Token {stringify_injection_token(token)} already registered in container {self.get_name()}.")
         elif isinstance(dep, DecoratorMetaData):
-            container = Container(dep, self)
+            container = Container(metadata=dep, host=self)
             self.deps[token] = container
             return container
         elif isinstance(dep, Container):
-            self.deps[token] = dep
+            self.deps[token] = None#dep
         else:
             mutable_container: Container = Container(host=self)
             mutable_container.injector.instance = dep
