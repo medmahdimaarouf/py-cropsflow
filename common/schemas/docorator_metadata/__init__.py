@@ -9,4 +9,3 @@ class DecoratorMetaData:
     target: Type[Any]
     type: DecoratorMetaDataType = "class"
 
-

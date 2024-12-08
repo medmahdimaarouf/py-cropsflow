@@ -31,14 +31,14 @@ class ApplicationFactory:
 
     def init(self, t: Type[Any]) -> Application:
         application: Application = Application()
-        inspector = Inspector(application.container)
+        inspector = Inspector(container=application.container)
         scanner = DependencyScanner(inspector)
         try:
             print("Initializing ...")
             scanner.scan(t)
             print('Modules initializing...')
-            initialize_modules(inspector)
+            #initialize_modules(inspector)
             print('Building tasks ...')
-            build_tasks(inspector)
+            #build_tasks(inspector)
         except Exception as e:
-            print(str(e))
+            raise e

@@ -6,12 +6,15 @@ from core.injector.injector import Injector
 from core.injector.module import Module
 from common.decorators import InjectionScope, Service
 
+from .scanner import scanServiceMetaData
+
 
 @Service(scope=InjectionScope.DEFAULT)
 class Application:
+    container: Container
 
     def __init__(self):
-        pass#self.container.register(Application, self)
+        self.container = Container(metadata=scanServiceMetaData(Application), instance=self, host=None)
 
     def group(self, path: str):
         pass

@@ -12,8 +12,7 @@ MODULE_WATERMARK = "__module__"
 GROUP_WATERMARK = '__group__'
 
 # Injectable DECORATOR Providers
-INJECTABLE_DECORATOR_PROVIDER_KEY = "__injectable_DECORATOR_provider_"
-INJECTABLE_DECORATOR_KEY = "_injectable_DECORATOR_provider_host_"
+INJECTABLE_DECORATOR_INJECTION_SCOPE_KEY = "_injectable_decorator_scope_"
 
 # Injectable DECORATOR Scope
 INJECTABLE_DECORATOR_SCOPE_KEY = "_injectable_DECORATOR_scope_"

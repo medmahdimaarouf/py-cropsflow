@@ -1,4 +1,5 @@
 import inspect
+import json
 from typing import Type, Any, Dict, ForwardRef, List, Union
 
 from .metadata_scanner import *
@@ -12,20 +13,18 @@ from common.utils import InjectionToken
 
 class DependencyScanner:
     inspector: Inspector
-    container: Container
 
-    def __init__(self, container: Container):
-        self.container = container
-        self.inspector = Inspector()
+    def __init__(self, inspector: Inspector):
+        self.inspector = inspector
 
     def scan(self, dep: Union[ModuleDef, Type[Any]]):
         self.scan_module(dep)
         self.scan_dependencies()
         self.bind_dependencies()
 
-    async def scan_module(self, module_def: ModuleDef) -> Module:
-        if is_function(module_def) or isinstance(module_def, ForwardRef[Any]):
-            module_def = await module_def()
+    def scan_module(self, module_def: ModuleDef) -> DependencyWrap:
+        if is_function(module_def):
+            module_def = module_def()
         wrap: DependencyWrap[Module] = None
         if isinstance(module_def, DynamicModule):
             wrap = self.inspector.register_module(scanModuleMetaData(module_def.module), dynamic=True,
@@ -34,13 +33,15 @@ class DependencyScanner:
                 wrap.dep.bind_provider(provider)
         else:
             wrap = self.inspector.register_module(scanModuleMetaData(module_def))
-
-        if not wrap.inserted:
+        if wrap.inserted:
             module_metadata: ModuleDecoratorMetaData = wrap.dep.metadata
             for import_def in module_metadata.imports:
-                wrap.dep.add_import(self.scan_module(import_def))
-
-        return wrap.dep
+                if import_def == module_metadata.target:
+                    print(f"Skipping self-import for module {module_metadata.target.__name__}")
+                    continue
+                import_wrapper = self.scan_module(import_def)
+                wrap.dep.add_import(token=import_wrapper.token, module=import_wrapper.dep)
+        return wrap
 
     def scan_dependencies(self):
         for module in self.inspector.get_modules():
@@ -79,14 +80,13 @@ class DependencyScanner:
 
     def bind_dependencies(self):
         if len(self.inspector.modules):
-            self._expose_module()
+            self._expose_module(next(iter(self.inspector.modules.values())))
 
-    def _expose_module(self, module: Module = None):
-        module = module if module is not None else next(iter(self.inspector.modules.values()))
+    def _expose_module(self, module: Module):
         if len(module.imports):
             for imported_module in module.imports.values():
                 self._expose_module(imported_module)
-                for token, exposed_dep in module.exports.items():
+                for token, exposed_dep in imported_module.exports.items():
                     if module.exports.get(token) is None:
                         module.exports[token] = exposed_dep
                     else:
@@ -94,6 +94,8 @@ class DependencyScanner:
         if len(module.exports) and module.is_global:
             for token, dep in module.exports.items():
                 self.container.register(token, dep)
+
+        module.exposed = True
 
 
 '''

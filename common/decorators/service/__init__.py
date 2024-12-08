@@ -19,7 +19,7 @@ def Service(scope: InjectionScope) -> Callable:
         else:
             raise Exception("Duplicated Injectable decorator")
         setattr(cls, DECORATOR_WATERMARKS, watermarks)
-        setattr(cls, INJECTABLE_DECORATOR_KEY, ServiceDecoratorMetaData(scope=scope))
+        setattr(cls, INJECTABLE_DECORATOR_INJECTION_SCOPE_KEY, scope)
         return cls
 
     return decorator

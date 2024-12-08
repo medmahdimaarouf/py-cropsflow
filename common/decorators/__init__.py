@@ -5,4 +5,3 @@ from .module import *
 from .service import *
 from .task import *
 
-print("decorators module is ok")

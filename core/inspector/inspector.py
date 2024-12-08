@@ -5,7 +5,8 @@ from common.decorators import ModuleDecoratorMetaData, TaskDecoratorMetaData, Ac
 from common.utils import InjectionToken
 from .dependency_wrapper import DependencyWrap
 from .tokens_generator import _generate_token
-from ..injector.module import Container, Module
+from ..injector.module import Module
+from ..injector.container import Container
 
 
 class Inspector:
@@ -17,29 +18,30 @@ class Inspector:
     global_tasks: Dict[InjectionToken, Any] = []
     container: Container
 
-    def __int__(self, container: Container):
+    def __init__(self, container: Container):
         self.container = container
 
     def register_module(self, module_metadata: ModuleDecoratorMetaData, dynamic: bool = False,
                         is_global: bool = False) -> DependencyWrap:
         token = module_metadata.target if not dynamic else _generate_token(module_metadata)
-        module = self.modules[module_metadata.target]
-        inserted = module is not None
-        if dynamic or not inserted:
-            module = self.modules[token] = Module(module_metadata, self.container)
+        module = self.modules.get(module_metadata.target)
+        exists = module is not None
+        if dynamic or not exists:
+            module = self.modules[token] = Module(metadata=module_metadata, host=self.container)
             module.is_global = is_global
             if is_global:
                 if self.global_modules.get(token) is None:
                     self.global_modules[token] = module
                 else:
                     raise Exception(f'Duplicated global module {module.metadata.target.__name__}')
-        return DependencyWrap(token=token, container=module, inserted=inserted)
+
+        return DependencyWrap(token=token, container=module, inserted=not exists)
 
     def get_modules(self, dynamic: bool = None) -> List[Module]:
         if dynamic is None:
             return list(self.modules.values())
         else:
-            return [module for token, module in self.modules.values() if token != module.metadata.target == dynamic]
+            return [module for token, module in self.modules.items() if token != module.metadata.target == dynamic]
 
     def register_task(self, metadata: TaskDecoratorMetaData, module: Module = None):
         task = Container(metadata, module)

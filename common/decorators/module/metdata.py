@@ -1,4 +1,4 @@
-from typing import List, Any, Union, Type, Callable, ForwardRef
+from typing import List, Any, Union, Type, Callable
 
 from common.schemas.docorator_metadata import DecoratorMetaData
 from common.utils import InjectionToken
@@ -34,7 +34,7 @@ class DynamicModule:
         self.is_global = is_global
 
 
-ModuleDef = Union[ForwardRef, Type[Any], DynamicModule, Callable]
+ModuleDef = Union[Type[Any], DynamicModule, Callable]
 ExportDef = Union[str, Type[Any]]
 
 
@@ -44,8 +44,9 @@ class ModuleDecoratorMetaData(DecoratorMetaData):
     providers: List[ProviderDef] = []
     exports: List[ExportDef] = []
 
-    def __init__(self, declarations: List[Type[Any]] = [], imports: List[ModuleDef] = [],
+    def __init__(self, target: Type[Any], declarations: List[Type[Any]] = [], imports: List[ModuleDef] = [],
                  providers: List[ProviderDef] = [], exports: List[ExportDef] = []):
+        self.target = target
         self.declarations = declarations
         self.imports = imports
         self.providers = providers

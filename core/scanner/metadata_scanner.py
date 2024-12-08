@@ -1,7 +1,7 @@
 from typing import Type, Any, List
 from common.constants import *
 from common.decorators import ModuleDecoratorMetaData, ActionDecoratorMetaData, DataPipeDecoratorMetaData, \
-    ServiceDecoratorMetaData, TaskDecoratorMetaData
+    ServiceDecoratorMetaData, TaskDecoratorMetaData, InjectionScope
 
 
 def isDecorated(meta_type: Type[Any], watermark: str) -> bool:
@@ -15,6 +15,7 @@ def getDecorators(meta_type: Type[Any]) -> List[str]:
 def scanModuleMetaData(meta_type: Type[Any]) -> ModuleDecoratorMetaData:
     if isDecorated(meta_type, MODULE_WATERMARK):
         return ModuleDecoratorMetaData(
+            target=meta_type,
             declarations=getattr(meta_type, MODULE_DECORATOR_DECLARATIONS_KEY, []),
             imports=getattr(meta_type, MODULE_DECORATOR_IMPORTS_KEY, []),
             providers=getattr(meta_type, MODULE_DECORATOR_PROVIDERS_KEY, []),
@@ -26,27 +27,29 @@ def scanModuleMetaData(meta_type: Type[Any]) -> ModuleDecoratorMetaData:
 
 def scanActionMetaData(meta_type: Type[Any]) -> ActionDecoratorMetaData:
     if isDecorated(meta_type, ACTION_WATERMARK):
-        return ActionDecoratorMetaData(selector=getattr(meta_type, ACTION_DECORATOR_SELECTOR_KEY, ""))
+        return ActionDecoratorMetaData(meta_type, getattr(meta_type, ACTION_DECORATOR_SELECTOR_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not an @Action")
 
 
 def scanDataPipeMetaData(meta_type: Type[Any]) -> DataPipeDecoratorMetaData:
     if isDecorated(meta_type, PIPE_WATERMARK):
-        return DataPipeDecoratorMetaData(selector=getattr(meta_type, DATAPIPE_DECORATOR_SELECTOR_KEY, ""))
+        return DataPipeDecoratorMetaData(meta_type, getattr(meta_type, DATAPIPE_DECORATOR_SELECTOR_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not a @DataPipe")
 
 
 def scanServiceMetaData(meta_type: Type[Any]) -> ServiceDecoratorMetaData:
     if isDecorated(meta_type, INJECTABLE_WATERMARK):
-        return ServiceDecoratorMetaData(selector=getattr(meta_type, INJECTABLE_DECORATOR_KEY, ""))
+        return ServiceDecoratorMetaData(target=meta_type,
+                                        scope=getattr(meta_type, INJECTABLE_DECORATOR_INJECTION_SCOPE_KEY,
+                                                      InjectionScope.DEFAULT))
     else:
         raise Exception(meta_type.__name__ + " is not a @Service")
 
 
 def scanTaskMetaData(meta_type: Type[Any]) -> TaskDecoratorMetaData:
     if isDecorated(meta_type, TASK_WATERMARK):
-        return TaskDecoratorMetaData(selector=getattr(meta_type, TASK_DECORATOR_TEMPLATE_URI_KEY, ""))
+        return TaskDecoratorMetaData(target=meta_type, selector=getattr(meta_type, TASK_DECORATOR_TEMPLATE_URI_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not a @Task")

@@ -6,3 +6,4 @@ from .pipes import *
 from .schemas import *
 from .services import *
 from .utils import *
+from .module import CommonModule
