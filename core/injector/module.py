@@ -1,9 +1,8 @@
 from typing import Type, Any, Dict
 
-from core.injector.container import Container
+from .container import Container
 from common.decorators import ModuleDecoratorMetaData, ProviderMetaData
 from common.utils import InjectionToken
-from core.injector.injector import Injector
 
 
 class Module(Container):

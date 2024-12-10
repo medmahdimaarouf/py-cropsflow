@@ -1,7 +1,8 @@
-from typing import Type, Any, List
+from inspect import signature, Parameter
+from typing import Type, Any, List, Dict, Callable
 from common.constants import *
 from common.decorators import ModuleDecoratorMetaData, ActionDecoratorMetaData, DataPipeDecoratorMetaData, \
-    ServiceDecoratorMetaData, TaskDecoratorMetaData, InjectionScope
+    ServiceDecoratorMetaData, TaskDecoratorMetaData, InjectionScope, InjectMetaData, FactoryProviderMetaData
 
 
 def isDecorated(meta_type: Type[Any], watermark: str) -> bool:
@@ -53,3 +54,42 @@ def scanTaskMetaData(meta_type: Type[Any]) -> TaskDecoratorMetaData:
         return TaskDecoratorMetaData(target=meta_type, selector=getattr(meta_type, TASK_DECORATOR_TEMPLATE_URI_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not a @Task")
+
+
+def scan_class_injects(cls: Type[Any], cls_method: Callable = None) -> Dict[str, InjectMetaData]:
+    cls_method = cls_method if cls_method is not None else cls.__init__
+    injects: Dict[str, InjectMetaData] = getattr(cls_method, INJECT_FN_DEPENDENCY_KEY, {})
+    parameters: Dict[str, Parameter] = signature(cls_method).parameters
+    for parameter_name, parameter in parameters.items():
+        if parameter_name in ['self', 'args', 'kwargs']:
+            continue
+        if injects.get(parameter_name) is None:
+            # If no InjectMetaData is provided, fall back to the type annotation
+            if parameter.annotation is not Parameter.empty:
+                injects[parameter_name] = InjectMetaData(token=parameter.annotation, scope=InjectionScope.DEFAULT,
+                                                         optional=False)
+            elif cls_method == cls.__init__:
+                raise ValueError(
+                    f"Cannot scan inject metadata for argument '{parameter_name}' in class '{cls.__name__}'")
+            else:
+                raise ValueError(
+                    f"Cannot scan inject metadata for argument '{parameter_name}' in method '{cls_method.__name__}' in class '{cls.__name__}'")
+
+    return injects
+
+
+def scan_factory_injects(meta_data: FactoryProviderMetaData) -> Dict[str, InjectMetaData]:
+    injects: Dict[str, InjectMetaData] = getattr(meta_data.use_factory, INJECT_FN_DEPENDENCY_KEY, {})
+    parameters: Dict[str, Parameter] = signature(meta_data.use_factory).parameters
+    for parameter_name, parameter in parameters.items():
+
+        if injects.get(parameter_name) is None:
+            # If no InjectMetaData is provided, fall back to the type annotation
+            if parameter.annotation is not Parameter.empty:
+                injects[parameter_name] = InjectMetaData(token=parameter.annotation, scope=InjectionScope.DEFAULT,
+                                                         optional=False)
+            else:
+                raise ValueError(
+                    f"Cannot scan inject metadata for argument '{parameter_name}' in factory provider '{meta_data.use_factory.__name__}'")
+
+    return injects

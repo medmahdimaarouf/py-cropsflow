@@ -34,7 +34,7 @@ class Action(ABC):
         else:
             try:
                 self.task: Task = asyncio.create_task[TaskContext](self.run(context))
-                return self.task;
+                return self.task
             except asyncio.CancelledError:
                 pass
 
@@ -52,4 +52,4 @@ class Action(ABC):
             return context
 
     def setNextCallBack(self, callback: Callable):
-        self.nextCallBack = callback;
+        self.nextCallBack = callback

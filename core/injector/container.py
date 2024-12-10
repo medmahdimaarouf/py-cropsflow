@@ -7,18 +7,12 @@ from common.schemas import DecoratorMetaData
 from common.utils import InjectionToken, stringify_injection_token
 from .injector import Injector, NULL_INJECTOR
 from ..abstracts.base_container import BaseContainer
-from ..abstracts.base_injector import BaseInjector, ResolveStatus
+from ..abstracts.base_injector import BaseInjector
 
 T = TypeVar('T')
 
 
 class Container(Generic[T], BaseContainer[T]):
-    id: str
-    injector: "BaseInjector"
-    metadata: DecoratorMetaData
-    host: "BaseContainer"
-    deps: Dict[InjectionToken, "BaseContainer"]
-
     def __init__(self, metadata: DecoratorMetaData, instance: T = None, host: BaseContainer = None):
         self.id = str(uuid.uuid4())  # Generate a unique ID for the object
         self.injector = Injector(self, instance=instance)  # Initialize the injector
@@ -26,6 +20,7 @@ class Container(Generic[T], BaseContainer[T]):
         self.host = host  # Set the host container
         # Initialize the deps dictionary with Injector as the key and Container as the value
         self.deps = {}  # Instantiate Container
+        # self.register_core_providers()
 
     def get_name(self):
         if isinstance(self.metadata, ProviderMetaData):
@@ -34,10 +29,10 @@ class Container(Generic[T], BaseContainer[T]):
             return self.metadata.target.__name__
 
     def get(self, token: InjectionToken = None) -> BaseInjector[T]:
-        if token is None:
+        if token is None or token is Injector:
             return self.injector
         elif self.deps.get(token) is not None:
-            return self.deps.get(token)
+            return self.deps.get(token).injector
         elif self.host is not None:
             return self.host.get(token)
         else:
@@ -47,17 +42,18 @@ class Container(Generic[T], BaseContainer[T]):
         if self.deps.get(token) is not None:
             raise ValueError(
                 f"Token {stringify_injection_token(token)} already registered in container {self.get_name()}.")
-        elif isinstance(dep, DecoratorMetaData):
+        elif isinstance(dep, DecoratorMetaData) or isinstance(dep, ProviderMetaData):
             container = Container(metadata=dep, host=self)
             self.deps[token] = container
             return container
-        elif isinstance(dep, Container):
-            self.deps[token] = None#dep
+        elif isinstance(dep, BaseContainer):
+            self.deps[token] = dep
         else:
-            mutable_container: Container = Container(host=self)
-            mutable_container.injector.instance = dep
-            mutable_container.injector.resolve_status = ResolveStatus.RESOLVED
+            mutable_container: Container = Container(host=self, instance=dep)
             self.deps[token] = mutable_container
+
+    def register_core_providers(self):
+        self.register(token=Injector, dep=ValueProviderMetaData(provide=Injector, use_value=self.injector))
 
 
 '''

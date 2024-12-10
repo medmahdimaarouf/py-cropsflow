@@ -1,0 +1,2 @@
+class TaskPlaybook:
+    pass

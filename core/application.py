@@ -6,7 +6,7 @@ from core.injector.injector import Injector
 from core.injector.module import Module
 from common.decorators import InjectionScope, Service
 
-from .scanner import scanServiceMetaData
+from .scanner.metadata_scanner import scanServiceMetaData
 
 
 @Service(scope=InjectionScope.DEFAULT)

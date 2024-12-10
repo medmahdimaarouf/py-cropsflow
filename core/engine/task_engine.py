@@ -1,2 +1,3 @@
 class TaskEngine:
-    pass
+    def run(self):
+        pass

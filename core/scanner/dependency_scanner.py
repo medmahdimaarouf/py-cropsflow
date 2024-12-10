@@ -1,14 +1,11 @@
 import inspect
-import json
-from typing import Type, Any, Dict, ForwardRef, List, Union
+from typing import Union
 
+from common.decorators import DynamicModule, ProviderMetaData, ModuleDef
 from .metadata_scanner import *
-from ..injector.container import Container
 from ..injector.module import Module
 from ..inspector import Inspector, DependencyWrap
 from ..utils import is_function
-from common.decorators import DynamicModule, ProviderMetaData, ModuleDef, ServiceDecoratorMetaData, DecoratorMetaData
-from common.utils import InjectionToken
 
 
 class DependencyScanner:

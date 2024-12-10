@@ -9,6 +9,11 @@ T = TypeVar('T')
 
 
 class BaseContainer(Generic[T], ABC):
+    id: str
+    injector: "BaseInjector"
+    metadata: DecoratorMetaData
+    host: "BaseContainer"
+    deps: Dict[InjectionToken, "BaseContainer"]
 
     @abstractmethod
     def get_name(self) -> str:

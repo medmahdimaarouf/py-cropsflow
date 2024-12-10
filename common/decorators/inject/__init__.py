@@ -2,12 +2,10 @@ from typing import Dict, Union
 from common.constants import INJECT_FN_DEPENDENCY_KEY
 from .metadata import *
 
+
 # Constants to simulate the Injection Keys
 
-FnArgInjectionIndex = Union[str, int]
-
-
-def inject(index: FnArgInjectionIndex, token: InjectionToken = None, scope: InjectionScope = InjectionScope.DEFAULT,
+def Inject(arg_name: str, token: InjectionToken = None, scope: InjectionScope = InjectionScope.DEFAULT,
            optional: bool = False,
            skip_self: bool = False):
     """
@@ -15,8 +13,8 @@ def inject(index: FnArgInjectionIndex, token: InjectionToken = None, scope: Inje
     """
 
     def decorator(func):
-        method_dependencies: Dict[FnArgInjectionIndex, InjectMetaData] = getattr(func, INJECT_FN_DEPENDENCY_KEY, {})
-        method_dependencies[index] = InjectMetaData(
+        method_dependencies: Dict[str, InjectMetaData] = getattr(func, INJECT_FN_DEPENDENCY_KEY, {})
+        method_dependencies[arg_name] = InjectMetaData(
             token=token,
             scope=scope,
             optional=optional,

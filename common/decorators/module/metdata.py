@@ -20,19 +20,19 @@ class ClassProviderMetaData(ProviderMetaData):
 
 
 class FactoryProviderMetaData(ProviderMetaData):
-    useFactory: Callable
+    use_factory: Callable
 
-    def __init__(self, provide: InjectionToken, useFactory: Callable):
+    def __init__(self, provide: InjectionToken, use_factory: Callable):
         super().__init__(provide=provide)
-        self.useFactory = useFactory
+        self.use_factory = use_factory
 
 
 class ValueProviderMetaData(ProviderMetaData):
-    useValue: Any
+    use_value: Any
 
-    def __init__(self, provide: InjectionToken, useValue: Any):
+    def __init__(self, provide: InjectionToken, use_value: Any):
         super().__init__(provide=provide)
-        self.useValue = useValue
+        self.use_value = use_value
 
 
 ProviderDef = Union[Type, ProviderMetaData]
