@@ -51,7 +51,7 @@ def scanServiceMetaData(meta_type: Type[Any]) -> ServiceDecoratorMetaData:
 
 def scanTaskMetaData(meta_type: Type[Any]) -> TaskDecoratorMetaData:
     if isDecorated(meta_type, TASK_WATERMARK):
-        return TaskDecoratorMetaData(target=meta_type, selector=getattr(meta_type, TASK_DECORATOR_TEMPLATE_URI_KEY, ""))
+        return TaskDecoratorMetaData(target=meta_type, template=getattr(meta_type, TASK_DECORATOR_TEMPLATE_URI_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not a @Task")
 

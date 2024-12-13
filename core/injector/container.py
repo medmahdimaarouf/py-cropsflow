@@ -41,7 +41,7 @@ class Container(Generic[T], BaseContainer[T]):
     def register(self, token: InjectionToken, dep: Union[object, DecoratorMetaData, BaseContainer]) -> BaseContainer:
         if self.deps.get(token) is not None:
             raise ValueError(
-                f"Token {stringify_injection_token(token)} already registered in container {self.get_name()}.")
+                f"Token {stringify_injection_token(token)} already registered in {self.get_name()}.")
         elif isinstance(dep, DecoratorMetaData) or isinstance(dep, ProviderMetaData):
             container = Container(metadata=dep, host=self)
             self.deps[token] = container

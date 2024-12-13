@@ -6,7 +6,7 @@ from core.application import Application
 from core.injector import load_dependencies
 from core.inspector import Inspector
 from core.scanner.dependency_scanner import DependencyScanner
-from .builder.task_parser import build_task
+from .builder.task_builder import build_task
 
 
 def initialize_modules(inspector: Inspector):
@@ -40,5 +40,6 @@ class ApplicationFactory:
             initialize_modules(inspector)
             print('Building tasks ...')
             build_tasks(inspector)
+            print('Application initialized successfully')
         except Exception as e:
             raise e

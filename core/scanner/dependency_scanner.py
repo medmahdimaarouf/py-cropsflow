@@ -2,6 +2,7 @@ import inspect
 from typing import Union
 
 from common.decorators import DynamicModule, ProviderMetaData, ModuleDef
+from common.utils import stringify_injection_token
 from .metadata_scanner import *
 from ..injector.module import Module
 from ..inspector import Inspector, DependencyWrap
@@ -80,17 +81,22 @@ class DependencyScanner:
             self._expose_module(next(iter(self.inspector.modules.values())))
 
     def _expose_module(self, module: Module):
-        if len(module.imports):
+        if len(module.imports.values()):
             for imported_module in module.imports.values():
-                self._expose_module(imported_module)
+                if not imported_module.exposed:
+                    self._expose_module(imported_module)
                 for token, exposed_dep in imported_module.exports.items():
-                    if module.exports.get(token) is None:
-                        module.exports[token] = exposed_dep
-                    else:
-                        raise f'Dependency {token} clashes with {module.exports.get(token)} in import {imported_module.metadata.target.__name__}'
-        if len(module.exports) and module.is_global:
-            for token, dep in module.exports.items():
-                self.container.register(token, dep)
+                    module.register(token=token, dep=exposed_dep)
+
+        if len(module.metadata.exports):
+            for token in module.metadata.exports:
+                if module.deps.get(token) is not None:
+                    module.exports.setdefault(token, module.deps.get(token))
+                    if module.is_global:
+                        self.container.register(token, module.deps.get(token))
+                else:
+                    raise Exception(
+                        f'Could not export {stringify_injection_token(token)} from {module.get_name()} : dependency not found.')
 
         module.exposed = True
 

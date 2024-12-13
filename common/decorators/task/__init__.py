@@ -25,8 +25,8 @@ def PrxTask(template: str = '', template_url: str = '') -> Callable:
 
     def decorator(cls):
         watermarks = getattr(cls, DECORATOR_WATERMARKS, [])
-        if INJECTABLE_WATERMARK not in watermarks:
-            watermarks.append(INJECTABLE_WATERMARK)
+        if TASK_WATERMARK not in watermarks:
+            watermarks.append(TASK_WATERMARK)
         else:
             raise Exception("Duplicated Task decorator")
         setattr(cls, DECORATOR_WATERMARKS, watermarks)

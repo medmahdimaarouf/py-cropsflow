@@ -8,9 +8,9 @@ from .pipes import *
         DelayAction,
         IterateAction
     ],
-    imports=[
-    ],
-    providers=[
+    exports=[
+        DelayAction,
+        IterateAction
     ]
 )
 class CommonModule:

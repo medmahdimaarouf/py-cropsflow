@@ -50,17 +50,16 @@ class DynamicModule:
 
 
 ModuleDef = Union[Type[Any], DynamicModule, Callable]
-ExportDef = Union[str, Type[Any]]
 
 
 class ModuleDecoratorMetaData(DecoratorMetaData):
     declarations: [Type[Any]] = []
     imports: List[ModuleDef] = []
     providers: List[ProviderDef] = []
-    exports: List[ExportDef] = []
+    exports: List[InjectionToken] = []
 
     def __init__(self, target: Type[Any], declarations: List[Type[Any]] = [], imports: List[ModuleDef] = [],
-                 providers: List[ProviderDef] = [], exports: List[ExportDef] = []):
+                 providers: List[ProviderDef] = [], exports: List[InjectionToken] = []):
         self.target = target
         self.declarations = declarations
         self.imports = imports

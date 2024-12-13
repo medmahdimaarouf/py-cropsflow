@@ -8,7 +8,7 @@ def PrxModule(
         declarations: List[Type[Any]] = [],
         imports: List[ModuleDef] = [],
         providers: List[ProviderDef] = [],
-        exports: List[ExportDef] = []) -> Callable:
+        exports: List[InjectionToken] = []) -> Callable:
     """
     This Action decorator
     Parameters:
