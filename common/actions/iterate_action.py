@@ -3,10 +3,10 @@ from typing import Iterable, Any
 from common.abstracts import Action, Option
 from common.abstracts.logger import Logger
 from common.abstracts.task_context import TaskContext
-from common.decorators import PrxAction
+from common.decorators import action
 
 
-@PrxAction("sleep")
+@action(selector="sleep")
 class IterateAction(Action):
     it: Iterable[Any] = []
 

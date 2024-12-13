@@ -4,10 +4,10 @@ from asyncio import sleep
 from ctypes import Union
 from common.abstracts import Action, Logger, Option
 from common.abstracts.task_context import TaskContext
-from common.decorators import PrxAction
+from common.decorators import action
 
 
-@PrxAction("sleep")
+@action(selector="sleep")
 class DelayAction(Action):
     ms: Union[float | int] = 1000
 

@@ -4,7 +4,7 @@ from typing import List, Callable
 from common.constants import *
 
 
-def Group(name: str, route: List[str]) -> Callable:
+def group(name: str, route: List[str]) -> Callable:
     """
     This Action decorator
     Parameters:

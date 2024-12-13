@@ -4,7 +4,7 @@ from .metdata import *
 from common.constants import *
 
 
-def PrxModule(
+def module(
         declarations: List[Type[Any]] = [],
         imports: List[ModuleDef] = [],
         providers: List[ProviderDef] = [],

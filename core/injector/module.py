@@ -1,8 +1,9 @@
 from typing import Type, Any, Dict
 
 from .container import Container
-from common.decorators import ModuleDecoratorMetaData, ProviderMetaData
+from common.decorators import ModuleDecoratorMetaData, ProviderMetaData, TaskDecoratorMetaData, ActionDecoratorMetaData
 from common.utils import InjectionToken
+from .task import Task
 
 
 class Module(Container):
@@ -28,8 +29,25 @@ class Module(Container):
         else:
             self.imports[token] = module
 
-    def bind_provider(self, provider: ProviderMetaData):
-        if self.deps.get(provider.provide, None) is not None:
-            raise ValueError(f"Module {self.metadata.target} already has a provider for token {provider.provide}")
-        else:
+    def register_provider(self, provider: ProviderMetaData):
+        if not self.deps.get(provider.provide, None):
             self.deps[provider.provide] = Container(provider, self)
+        else:
+            raise ValueError(f"Module {self.metadata.target} already has a provider for token {provider.provide}")
+
+    def register_task(self, metadata: TaskDecoratorMetaData) -> Task:
+        if not self.deps.get(metadata.target, None):
+            task = Task(metadata=metadata, host=self)
+            self.deps[metadata.target] = task
+            return task
+        else:
+            raise Exception(f'Task {metadata.target.__name__} already exists in @Module {self.get_name()}')
+
+    def register_action(self, metadata: ActionDecoratorMetaData) -> Container:
+        if not self.deps.get(metadata.target):
+            action = Container(metadata=metadata, host=self)
+            self.deps[metadata.target] = action
+            return action
+        else:
+            raise Exception(
+                f'Action {metadata.target.__name__} already exists in @Module {self.get_name()}')

@@ -43,26 +43,15 @@ class Inspector:
         else:
             return [module for token, module in self.modules.items() if token != module.metadata.target == dynamic]
 
-    def register_task(self, metadata: TaskDecoratorMetaData, module: Module = None):
-        task = Container(metadata=metadata, host=module)
-        if module is not None:
-            if module.deps.get(metadata.target) is None:
-                module.deps[metadata.target] = task
-            else:
-                raise Exception(
-                    f'Task {metadata.target.__name__} already exists in @Module {module.metadata.target.__name__}')
+    def register_task(self, metadata: TaskDecoratorMetaData, module: Module):
+        task = module.register_task(metadata=metadata)
         self.tasks[metadata.target] = task
 
-    def task(self, token: InjectionToken) -> Any:
+    def get_task(self, token: InjectionToken) -> Any:
         return self.tasks.get(token)
 
     def register_action(self, metadata: ActionDecoratorMetaData, module: Module):
-        if module is not None:
-            if module.deps.get(metadata.target) is None:
-                module.deps[metadata.target] = Container(metadata=metadata, host=module)
-            else:
-                raise Exception(
-                    f'Action {metadata.target.__name__} already exists in @Module {module.metadata.target.__name__}')
+        module.register_action(metadata)
 
     def register_pipe(self, metadata: DataPipeDecoratorMetaData, module: Module):
         if module is not None:

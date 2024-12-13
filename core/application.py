@@ -1,15 +1,13 @@
-import uuid
-from typing import Dict, Any, Type
+from typing import Any, Type
+
+from common.decorators import InjectionScope, service
 from common.utils import InjectionToken
 from core.injector.container import Container
 from core.injector.injector import Injector
-from core.injector.module import Module
-from common.decorators import InjectionScope, Service
-
 from .scanner.metadata_scanner import scanServiceMetaData
 
 
-@Service(scope=InjectionScope.DEFAULT)
+@service(scope=InjectionScope.DEFAULT)
 class Application:
     container: Container
 

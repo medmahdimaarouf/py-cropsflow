@@ -6,7 +6,7 @@ from .metadata import *
 from .option_metadata import *
 
 
-def PrxAction(selector: str) -> Callable:
+def action(selector: str) -> Callable:
     """
     This Action decorator
     Parameters:

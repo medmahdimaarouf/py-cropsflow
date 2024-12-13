@@ -7,6 +7,6 @@ class TaskDecoratorMetaData(DecoratorMetaData):
     template: str
 
     def __init__(self, target: Type[Any], template: str):
-        self.target = target
         self.type = "service"
+        self.target = target
         self.template = template

@@ -18,14 +18,14 @@ def initialize_modules(inspector: Inspector):
 
 
 def build_tasks(inspector: Inspector):
-    for module in inspector.get_modules(dynamic=False):
+    for token, task in inspector.tasks.items():
         def errorCallback(e: Exception):
             print(str(e))
 
-        for dep in module.deps.values():
-            if isinstance(dep.metadata, TaskDecoratorMetaData):
-                build_task(dep, errorCallback)
-
+        print(f"building task '{task.metadata.target.__name__}' ...")
+        build_task(task, errorCallback)
+        print(f"build task '{task.metadata.target.__name__}' completed successfully")
+        return
 
 class ApplicationFactory:
 

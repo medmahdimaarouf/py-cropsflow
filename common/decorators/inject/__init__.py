@@ -5,7 +5,7 @@ from .metadata import *
 
 # Constants to simulate the Injection Keys
 
-def Inject(arg_name: str, token: InjectionToken = None, scope: InjectionScope = InjectionScope.DEFAULT,
+def inject(arg_name: str, token: InjectionToken = None, scope: InjectionScope = InjectionScope.DEFAULT,
            optional: bool = False,
            skip_self: bool = False):
     """

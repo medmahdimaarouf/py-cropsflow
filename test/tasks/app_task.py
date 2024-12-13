@@ -1,6 +1,6 @@
-from common import PrxTask
+from common import task
 
 
-@PrxTask(template="./app.task.xml")
+@task(template_path="./app.task.xml")
 class AppTask:
     pass

@@ -5,7 +5,7 @@ from .metadata import DataPipeDecoratorMetaData
 from common.constants import *
 
 
-def PrxPipe(selector: str) -> Callable:
+def pipe(selector: str) -> Callable:
     """
     This Action decorator
     Parameters:

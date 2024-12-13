@@ -1,16 +1,16 @@
-from common import PrxModule, CommonModule, ValueProviderMetaData
+from common import CommonModule, ValueProviderMetaData
 from core.application_factory import ApplicationFactory
 
-from common.decorators import Inject, FactoryProviderMetaData
+from common.decorators import inject, FactoryProviderMetaData, module
 from tasks import *
 
 
-@Inject(arg_name='v', token='p1')
+@inject(arg_name='v', token='p1')
 def provider_function(v: int) -> str:
     return 'i am provider_function ' + str(v)
 
 
-@PrxModule(
+@module(
     declarations=[AppTask],
     imports=[CommonModule],
     providers=[

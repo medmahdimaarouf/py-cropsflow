@@ -5,7 +5,7 @@ from common.constants import *
 from ..inject import InjectionScope
 
 
-def Service(scope: InjectionScope) -> Callable:
+def service(scope: InjectionScope) -> Callable:
     """
     This Action decorator
     Parameters:

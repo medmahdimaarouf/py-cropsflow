@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from common.models import DataModel
 
 
-class DataPipe(ABC):
+class Pipe(ABC):
     data: DataModel
 
     @abstractmethod

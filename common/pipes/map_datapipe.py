@@ -1,10 +1,10 @@
 from common import DataModel
-from common.abstracts import DataPipe
-from common.decorators import PrxPipe
+from common.abstracts import Pipe
+from common.decorators import pipe
 
 
-@PrxPipe("list")
-class MapDataPipe(DataPipe):
+@pipe(selector="list")
+class MapPipe(Pipe):
 
     def accumulate(self, data: DataModel, accessor: str) -> None:
         pass

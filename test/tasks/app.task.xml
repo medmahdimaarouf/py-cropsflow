@@ -12,9 +12,7 @@
         <readme src=""/>
     </meta>
     <playbook>
-        <axios-get
-                label="loading brands page"
-                url="https://www.automobile.tn/fr/neuf/alfa-romeo">
+        <axios-get label="loading brands page" url="https://www.automobile.tn/fr/neuf/alfa-romeo">
             <axios-dom-response label="Parsing brands page dom response">
                 <dom-select-all label="Selcting brands items" selector=".versions-item>a">
                     <key-value label="brand item key value data pipe">

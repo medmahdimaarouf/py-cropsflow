@@ -1,9 +1,9 @@
-from .decorators.module import PrxModule
+from .decorators.module import module
 from .actions import *
 from .pipes import *
 
 
-@PrxModule(
+@module(
     declarations=[
         DelayAction,
         IterateAction

@@ -28,7 +28,7 @@ class DependencyScanner:
             wrap = self.inspector.register_module(scanModuleMetaData(module_def.module), dynamic=True,
                                                   is_global=module_def.is_global)
             for provider in module_def.providers if module_def.providers is not None else []:
-                wrap.dep.bind_provider(provider)
+                wrap.dep.register_provider(provider)
         else:
             wrap = self.inspector.register_module(scanModuleMetaData(module_def))
         if wrap.inserted:
@@ -66,7 +66,7 @@ class DependencyScanner:
                 elif isDecorated(dec, TASK_WATERMARK):
                     self.inspector.register_task(metadata=scanTaskMetaData(dec), module=module)
                 elif isDecorated(dec, ACTION_WATERMARK):
-                    self.inspector.register_action(metadata=scanActionMetaData(dec), module=module)
+                    module.register_action(metadata=scanActionMetaData(dec))
                 elif isDecorated(dec, PIPE_WATERMARK):
                     self.inspector.register_pipe(metadata=scanDataPipeMetaData(dec), module=module)
                 elif isDecorated(dec, INJECTABLE_WATERMARK):
