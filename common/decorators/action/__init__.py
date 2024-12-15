@@ -1,9 +1,8 @@
 from functools import wraps
-from typing import Callable, Any
+from typing import Callable
 
 from common.constants import *
 from .metadata import *
-from .option_metadata import *
 
 
 def action(selector: str) -> Callable:
@@ -25,25 +24,5 @@ def action(selector: str) -> Callable:
 
     return decorator
 
-    return decorator
 
 
-def Option(required: bool = False, label: str = None, default: Any = Any) -> Callable:
-    """
-    This Action option decorator
-    """
-
-    def decorator(func: Callable) -> Callable:
-        @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
-            return func(*args, **kwargs)
-
-        # Attach metadata to the function
-        wrapper._metadata = {
-            'required': required,
-            'label': label,
-            'default': default
-        }
-        return wrapper
-
-    return decorator

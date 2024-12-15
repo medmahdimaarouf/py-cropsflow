@@ -1,11 +1,13 @@
+from dataclasses import dataclass, field
 from typing import Type, Any
 
 from common.schemas import DecoratorMetaData
 from ..inject import InjectionScope
 
 
+@dataclass()
 class ServiceDecoratorMetaData(DecoratorMetaData):
-    scope: InjectionScope
+    scope: InjectionScope = field(default_factory=InjectionScope)
 
     def __init__(self, target: Type[Any], scope: InjectionScope = None):
         self.target = target

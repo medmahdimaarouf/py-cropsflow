@@ -28,13 +28,15 @@ GROUP_DECORATOR_ROUTE_KEY = "_GROUP_DECORATOR_ROUTE_"
 
 # Action DECORATOR Keys
 ACTION_DECORATOR_SELECTOR_KEY = "_action_selector_"
-ACTION_DECORATOR_OPTIONS_KEY = "_action_options_array_"
 ACTION_DECORATOR_PROVIDERS_KEY = "_action_providers_"
 
 # DataPipe DECORATOR Keys
 DATAPIPE_DECORATOR_SELECTOR_KEY = "_datapipe_selector_"
 DATAPIPE_DECORATOR_ACCESSOR_KEY = "_datapipe_accessor_"
 DATAPIPE_DECORATOR_ACCUMULATORS_KEY = "_datapipe_accumulators_"
+
+# Option DECORATOR KEYS
+OPTION_DECORATOR_KEY = "_option_key_"
 
 # Task DECORATOR Keys
 TASK_DECORATOR_TEMPLATE_URI_KEY = "_task_template_url_"

@@ -9,33 +9,11 @@
         <tags>
             task,automation,robots
         </tags>
-        <readme src=""/>
+        <readme src="./readme.md"/>
     </meta>
     <playbook>
-        <axios-get label="loading brands page" url="https://www.automobile.tn/fr/neuf/alfa-romeo">
-            <axios-dom-response label="Parsing brands page dom response">
-                <dom-select-all label="Selcting brands items" selector=".versions-item>a">
-                    <key-value label="brand item key value data pipe">
-                        <dom-attribute-value data-pipe-accessor="link" label="getting url link"
-                                             key="href"/>
-                        <dom-first-child-element label="select brand item image element"
-                                                 selector="img">
-                            <dom-attribute-value data-pipe-accessor="imageUrl"
-                                                 label="getting brand image url" key="src"/>
-                        </dom-first-child-element>
-                        <dom-first-child-element label="select brand item title element"
-                                                 selector="h2">
-                            <dom-text-content data-pipe-accessor="title"
-                                              label="getting brand title"/>
-                        </dom-first-child-element>
-                        <dom-first-child-element label="select brand item price element"
-                                                 selector=".price">
-                            <dom-text-content data-pipe-accessor="price" trim="true"
-                                              label="getting brand price"/>
-                        </dom-first-child-element>
-                    </key-value>
-                </dom-select-all>
-            </axios-dom-response>
-        </axios-get>
+        <sleep ms="5000">
+
+        </sleep>
     </playbook>
 </task>

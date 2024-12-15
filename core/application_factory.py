@@ -1,12 +1,10 @@
 from typing import Type, Any
 
 from common.abstracts import Init
-from common.decorators import TaskDecoratorMetaData
-from core.application import Application
-from core.injector import load_dependencies
-from core.inspector import Inspector
-from core.scanner.dependency_scanner import DependencyScanner
-from .builder.task_builder import build_task
+from .application import Application
+from .injector import load_dependencies
+from .inspector import Inspector
+from .scanner.dependency_scanner import DependencyScanner
 
 
 def initialize_modules(inspector: Inspector):
@@ -17,15 +15,22 @@ def initialize_modules(inspector: Inspector):
             instance.init(**module.injector.resolve_all())
 
 
-def build_tasks(inspector: Inspector):
+def build_tasks(inspector: Inspector) -> bool:
+    has_errors: bool = False
     for token, task in inspector.tasks.items():
+
         def errorCallback(e: Exception):
+            nonlocal has_errors
+            has_errors = True
             print(str(e))
 
         print(f"building task '{task.metadata.target.__name__}' ...")
-        build_task(task, errorCallback)
-        print(f"build task '{task.metadata.target.__name__}' completed successfully")
-        return
+        if task.build(errorCallback) is True:
+            print(f"build task '{task.metadata.target.__name__}' completed successfully")
+        else:
+            print(f"build task '{task.metadata.target.__name__}' Failed")
+    return not has_errors
+
 
 class ApplicationFactory:
 
@@ -39,7 +44,9 @@ class ApplicationFactory:
             print('Modules initializing...')
             initialize_modules(inspector)
             print('Building tasks ...')
-            build_tasks(inspector)
-            print('Application initialized successfully')
+            if build_tasks(inspector):
+                print('Application initialized successfully')
+            else:
+                print('Build tasks failed')
         except Exception as e:
             raise e

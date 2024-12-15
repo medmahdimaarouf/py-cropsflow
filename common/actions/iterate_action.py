@@ -1,12 +1,12 @@
 from typing import Iterable, Any
 
-from common.abstracts import Action, Option
+from common.abstracts import Action
 from common.abstracts.logger import Logger
 from common.abstracts.task_context import TaskContext
-from common.decorators import action
+from common.decorators import action, option
 
 
-@action(selector="sleep")
+@action(selector="iterate")
 class IterateAction(Action):
     it: Iterable[Any] = []
 
@@ -14,7 +14,7 @@ class IterateAction(Action):
         super().__init__()
         self.of = []
 
-    @Option(label='of', required=True)
+    @option(name='of', required=True)
     def set_name(self, of: Iterable[Any] = []):
         self.of = of
 

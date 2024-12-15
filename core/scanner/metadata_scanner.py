@@ -3,6 +3,7 @@ from typing import Type, Any, List, Dict, Callable
 from common.constants import *
 from common.decorators import ModuleDecoratorMetaData, ActionDecoratorMetaData, DataPipeDecoratorMetaData, \
     ServiceDecoratorMetaData, TaskDecoratorMetaData, InjectionScope, InjectMetaData, FactoryProviderMetaData
+from common.decorators.option import OptionMetaData
 
 
 def isDecorated(meta_type: Type[Any], watermark: str) -> bool:
@@ -28,14 +29,15 @@ def scanModuleMetaData(meta_type: Type[Any]) -> ModuleDecoratorMetaData:
 
 def scanActionMetaData(meta_type: Type[Any]) -> ActionDecoratorMetaData:
     if isDecorated(meta_type, ACTION_WATERMARK):
-        return ActionDecoratorMetaData(meta_type, getattr(meta_type, ACTION_DECORATOR_SELECTOR_KEY, ""))
+        return ActionDecoratorMetaData(target=meta_type, selector=getattr(meta_type, ACTION_DECORATOR_SELECTOR_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not an @Action")
 
 
 def scanDataPipeMetaData(meta_type: Type[Any]) -> DataPipeDecoratorMetaData:
     if isDecorated(meta_type, PIPE_WATERMARK):
-        return DataPipeDecoratorMetaData(meta_type, getattr(meta_type, DATAPIPE_DECORATOR_SELECTOR_KEY, ""))
+        return DataPipeDecoratorMetaData(target=meta_type,
+                                         selector=getattr(meta_type, DATAPIPE_DECORATOR_SELECTOR_KEY, ""))
     else:
         raise Exception(meta_type.__name__ + " is not a @DataPipe")
 
@@ -93,3 +95,12 @@ def scan_factory_injects(meta_data: FactoryProviderMetaData) -> Dict[str, Inject
                     f"Cannot scan inject metadata for argument '{parameter_name}' in factory provider '{meta_data.use_factory.__name__}'")
 
     return injects
+
+
+def scan_class_options(cls: Type) -> Dict[str, OptionMetaData]:
+    options: Dict[str, OptionMetaData] = {}
+    for attr_name, attr_value in cls.__dict__.items():
+        option: OptionMetaData = getattr(attr_value, OPTION_DECORATOR_KEY, None)
+        if option is not None:
+            options.setdefault(option.name.strip(), option)
+    return options

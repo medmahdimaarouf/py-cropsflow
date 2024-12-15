@@ -1,9 +1,10 @@
 import asyncio
 from abc import ABC, abstractmethod
 from asyncio import Task
-from typing import Callable
+from typing import Callable, Dict, Any
 
-from common.decorators import Option
+from common.decorators import option as opt, OptionMetaData
+from ..constants import OPTION_DECORATOR_KEY
 from .logger import Logger
 from .task_context import TaskContext
 
@@ -12,15 +13,28 @@ class Action(ABC):
     label: str = ''
     required: bool = False
 
+    def option(self, name: str, value: Any):
+        """Assign values to properties of the instance using tracked metadata."""
+        options: Dict[str, OptionMetaData] = getattr(self.__class__, OPTION_DECORATOR_KEY, {})
+        option: OptionMetaData = options.get(name.strip(), None)
+        if option is not None:
+            setattr(self, option.setter_name, value)
+        else:
+            raise Exception(f"The @option '{name}' is not found in {self.__class__.__name__}")
+
+    def options(self, options: Dict[str, Any]):
+        for name, value in options.items():
+            self.option(name, value)
+
     def __init__(self):
         self.nextCallBack = None
         self.task = None
 
-    @Option(label='name', required=False)
+    @opt(name='name', required=False)
     def set_name(self, label: str = 'label'):
         self.label = label
 
-    @Option(label='required', required=False)
+    @opt(name='required', required=False)
     def set_required(self, required: bool = False):
         self.required = required
 

@@ -2,12 +2,14 @@ import uuid
 from inspect import isclass
 from typing import Dict, Generic, TypeVar, Union
 
-from common.decorators import ProviderMetaData, ValueProviderMetaData
+from common.decorators import ProviderMetaData, ValueProviderMetaData, DataPipeDecoratorMetaData, \
+    ActionDecoratorMetaData
 from common.schemas import DecoratorMetaData
 from common.utils import InjectionToken, stringify_injection_token
 from .injector import Injector, NULL_INJECTOR
 from ..abstracts.base_container import BaseContainer
 from ..abstracts.base_injector import BaseInjector
+from common.decorators import TaskDecoratorMetaData
 
 T = TypeVar('T')
 
@@ -29,7 +31,7 @@ class Container(Generic[T], BaseContainer[T]):
             return self.metadata.target.__name__
 
     def get(self, token: InjectionToken = None) -> BaseInjector[T]:
-        if token is None or token is Injector:
+        if token is None or token == Injector:
             return self.injector
         elif self.deps.get(token) is not None:
             return self.deps.get(token).injector
@@ -51,6 +53,28 @@ class Container(Generic[T], BaseContainer[T]):
         else:
             mutable_container: Container = Container(host=self, instance=dep)
             self.deps[token] = mutable_container
+
+    def get_task(self, token: InjectionToken) -> "Container":
+        for t, dep in self.deps.items():
+            if isinstance(dep.metadata, TaskDecoratorMetaData) and t == token:
+                return dep
+        return None if self.host is None else self.host.get_task(token=token)
+
+    def get_action(self, token: InjectionToken = None, selector: str = None) -> "Container":
+        for t, dep in self.deps.items():
+            if not isinstance(dep.metadata, ActionDecoratorMetaData): continue
+            metadata: ActionDecoratorMetaData = dep.metadata
+            if t == token or selector == metadata.selector:
+                return dep
+        return None if self.host is None else self.host.get_action(token=token, selector=selector)
+
+    def get_pipe(self, token: InjectionToken = None, selector: str = None) -> "Container":
+        for t, dep in self.deps.items():
+            if not isinstance(dep.metadata, DataPipeDecoratorMetaData): continue
+            metadata: ActionDecoratorMetaData = dep.metadata
+            if t == token or selector == metadata.selector:
+                return dep
+        return None if self.host is None else self.host.get_action(token=token, selector=selector)
 
     def register_core_providers(self):
         self.register(token=Injector, dep=ValueProviderMetaData(provide=Injector, use_value=self.injector))

@@ -1,22 +1,23 @@
-from lxml.etree import ElementTree, Element, XMLSyntaxError, parse
 from typing import Callable, Dict, List
 
-from common.decorators import TaskDecoratorMetaData
-from .task_parse_tree import TaskParseTree, TaskPlaybookParseTree
-from ..injector.task import Task
+from lxml.etree import Element, XMLSyntaxError, parse
+
+from .task_parse_tree import TaskParseTree, TaskPlaybookParseNode
 
 
-def parse_playbook(playbook_element: Element, error_callback: Callable) -> TaskPlaybookParseTree:
+def parse_playbook_item(playbook_element: Element, error_callback: Callable) -> TaskPlaybookParseNode:
     options: Dict[str, str] = {}
     for key, attr in playbook_element.attrib.items():
         options[key.strip()] = attr.strip()
-    playbook_parse_tree: TaskPlaybookParseTree = TaskPlaybookParseTree(selector=playbook_element.tag.strip(),
-                                                                       options=options,
-                                                                       line=playbook_element.sourceline)
+    items: List[TaskPlaybookParseNode] = []
 
     for child in playbook_element:
-        playbook_parse_tree.children.append(parse_playbook(child, error_callback))
-    return playbook_parse_tree
+        items.append(parse_playbook_item(child, error_callback))
+
+    return TaskPlaybookParseNode(selector=playbook_element.tag.strip(),
+                                 options=options,
+                                 line=playbook_element.sourceline,
+                                 children=items)
 
 
 def parse_meta(meta_element: Element, error_callback: Callable) -> Dict[str, str]:
@@ -37,7 +38,7 @@ def parse_meta(meta_element: Element, error_callback: Callable) -> Dict[str, str
     return task_template_metadata
 
 
-def parse_task_xml(task: Task, error_callback: Callable) -> TaskParseTree:
+def parse_task_xml(template_path: str, error_callback: Callable) -> TaskParseTree:
     def handle_error(error, res: any = None) -> any:
         if error_callback is not None:
             error_callback(error)
@@ -46,16 +47,16 @@ def parse_task_xml(task: Task, error_callback: Callable) -> TaskParseTree:
             raise e
 
     try:
-        metadata: TaskDecoratorMetaData = task.metadata
-        tree = parse(source=metadata.template).getroot()
+        tree = parse(source=template_path).getroot()
         parsed_metadata: Dict[str, str] = {}
-        parsed_playbook: List[TaskPlaybookParseTree] = []
+        parsed_playbook: List[TaskPlaybookParseNode] = []
 
         for child in tree:
             if child.tag == "meta":
                 parsed_metadata = parse_meta(child, error_callback)
             elif child.tag == "playbook":
-                parsed_playbook = parse_playbook(child, error_callback)
+                for playbook_item in child:
+                    parsed_playbook.append(parse_playbook_item(playbook_item, error_callback))
             else:
                 handle_error(ValueError(f"Unknown tag '{child.tag}' found in <task>."))
 
@@ -63,19 +64,8 @@ def parse_task_xml(task: Task, error_callback: Callable) -> TaskParseTree:
 
     except FileNotFoundError:
         return handle_error(
-            Exception(f"Error: Task '{metadata.target.__name__}' template file '{metadata.template}' was not found.")
+            Exception(f"Error: template file '{template_path}' was not found.")
         )
 
     except XMLSyntaxError as e:
-        return handle_error(ValueError(f"XML parsing error: {e.position[0], e.position[1]}"))
-
-
-def parse_task_yaml(task: Task, error_callback: Callable) -> TaskParseTree:
-    return None
-
-
-def parse_task(task: Task, error_callback: Callable) -> TaskParseTree:
-    if task.metadata.template.endswith('.xml'):
-        return parse_task_xml(task, error_callback)
-    else:
-        return parse_task_yaml(task, error_callback)
+        return handle_error(ValueError(f"XML parsing template {template_path} error: {e.position[0], e.position[1]}"))

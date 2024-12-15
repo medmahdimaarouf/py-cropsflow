@@ -1,4 +1,5 @@
 from inspect import Parameter, signature
+from typing import TypeVar, Generic
 
 from common.decorators import *
 from common.utils import stringify_injection_token
@@ -42,7 +43,7 @@ class Injector(Generic[T], BaseInjector[T]):
             return self.instance
         else:
             injector = self.container.get(token=token)
-            if injector is NULL_INJECTOR and optional:
+            if injector == NULL_INJECTOR and optional:
                 return None
             else:
                 return injector.resolve(scope=scope, optional=optional)

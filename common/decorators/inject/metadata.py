@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Type, Any
 
@@ -12,10 +12,10 @@ class InjectionScope(Enum):
 
 @dataclass
 class InjectMetaData:
-    scope: InjectionScope
-    optional: bool
-    skip_self: bool
-    token: InjectionToken
+    scope: InjectionScope = field(default_factory=InjectionScope)
+    optional: bool = field(default_factory=bool)
+    skip_self: bool = field(default_factory=bool)
+    token: InjectionToken = field(default_factory=str)
 
     def __init__(self, token: InjectionToken = None, scope: InjectionScope = InjectionScope.DEFAULT,
                  optional: bool = False,

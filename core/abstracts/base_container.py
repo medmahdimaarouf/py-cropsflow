@@ -27,3 +27,15 @@ class BaseContainer(Generic[T], ABC):
     def register(self, token: InjectionToken,
                  dep: Union[object, DecoratorMetaData, "BaseContainer"]) -> "BaseContainer":
         pass
+
+    @abstractmethod
+    def get_task(self, token: InjectionToken) -> "Container":
+        pass
+
+    @abstractmethod
+    def get_action(self, token: InjectionToken = None, selector: str = None) -> "BaseContainer":
+        pass
+
+    @abstractmethod
+    def get_pipe(self, token: InjectionToken = None, selector: str = None) -> "BaseContainer":
+        pass
