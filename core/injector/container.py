@@ -3,7 +3,7 @@ from inspect import isclass
 from typing import Dict, Generic, TypeVar, Union
 
 from common.decorators import ProviderMetaData, ValueProviderMetaData, DataPipeDecoratorMetaData, \
-    ActionDecoratorMetaData
+    ActionDecoratorMetaData, InjectionScope
 from common.schemas import DecoratorMetaData
 from common.utils import InjectionToken, stringify_injection_token
 from .injector import Injector, NULL_INJECTOR
@@ -39,6 +39,9 @@ class Container(Generic[T], BaseContainer[T]):
             return self.host.get(token)
         else:
             return NULL_INJECTOR
+
+    def resolve(self, scope: InjectionScope = None, optional: bool = False):
+        return self.injector.resolve(scope=scope, optional=optional)
 
     def register(self, token: InjectionToken, dep: Union[object, DecoratorMetaData, BaseContainer]) -> BaseContainer:
         if self.deps.get(token) is not None:

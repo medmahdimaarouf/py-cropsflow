@@ -1,7 +1,9 @@
+import uuid
 from abc import abstractmethod, ABC
-from typing import Generic, TypeVar
+from dataclasses import field, dataclass
+from typing import Generic, TypeVar, List, Dict, Any
 
-from ..injector import Task, TaskPlaybook, Injector
+from ..injector import TaskPlaybookItem, Injector, TaskPlaybook, Task
 
 from common.abstracts import Action, Pipe, Init
 from common.decorators import InjectionScope
@@ -9,13 +11,13 @@ from common.decorators import InjectionScope
 T = TypeVar('T')
 
 
-class WorkerNode(Generic[T], ABC):
-    important: bool
-    injector: Injector[T]
+class WorkerTreeNode(Generic[T], ABC):
+    playbook_item: TaskPlaybookItem
+    nodes: List["WorkerTreeNode"]
 
-    def __int__(self, injector: T, important: bool = True, parent: "WorkerNode" = None):
-        self.injector = injector
-        self.important = important
+    def __int__(self, playbook_item: TaskPlaybookItem, parent: "WorkerTreeNode" = None):
+        self.playbook_item = playbook_item
+        self.nodes = []
 
     @abstractmethod
     def run(self):
@@ -24,8 +26,12 @@ class WorkerNode(Generic[T], ABC):
     def instantiate(self) -> T:
         return self.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
 
+    @abstractmethod
+    def add_node(self, playbook_item: TaskPlaybookItem):
+        pass
 
-class ActionWorkerNode(WorkerNode[Action]):
+
+class ActionWorkerNode(WorkerTreeNode[Action]):
     def __init__(self, action: Action):
         super().__init__(action)
 
@@ -37,7 +43,7 @@ class ActionWorkerNode(WorkerNode[Action]):
         await instance.run(context=None)
 
 
-class PipeWorkerNode(WorkerNode[Pipe]):
+class PipeWorkerNode(WorkerTreeNode[Pipe]):
     def __init__(self, pipe: Pipe):
         super().__init__(pipe)
 
@@ -57,4 +63,3 @@ class TaskWorker:
 
     async def run(self):
         playbook: TaskPlaybook = self.task.template.playbook
-

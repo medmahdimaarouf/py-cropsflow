@@ -10,8 +10,7 @@ from .task_context import TaskContext
 
 
 class Action(ABC):
-    label: str = ''
-    required: bool = False
+    nextCallBack: Callable[[TaskContext], Any] = None
 
     def option(self, name: str, value: Any):
         """Assign values to properties of the instance using tracked metadata."""
@@ -48,7 +47,7 @@ class Action(ABC):
         else:
             try:
                 self.task: Task = asyncio.create_task[TaskContext](self.run(context))
-                return self.task
+                return self.task.uncancel()
             except asyncio.CancelledError:
                 pass
 
@@ -67,3 +66,6 @@ class Action(ABC):
 
     def setNextCallBack(self, callback: Callable):
         self.nextCallBack = callback
+
+    def complete(self, context: TaskContext = None):
+        self.stop()
