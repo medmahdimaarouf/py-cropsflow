@@ -1,12 +1,26 @@
-from abc import abstractmethod
+import uuid
+from abc import abstractmethod, ABC
+from dataclasses import field
+from typing import Generic, List, TypeVar, Dict, Any
+from ..injector import Container
+from common.decorators import InjectionScope, ActionDecoratorMetaData, DataPipeDecoratorMetaData
+from common.abstracts import Action, Pipe
+
+T = TypeVar('T')
 
 
-class WorkerTreeNode(Generic[T], ABC):
-    playbook_item: TaskPlaybookItem
-    nodes: List["WorkerTreeNode"]
+class PlaybookNode(Generic[T], ABC):
+    id: str
+    parent: "PlaybookNode"
+    action_or_pipe: Container
+    bindings: Dict[str, Any]
+    nodes: List["PlaybookNode"]
 
-    def __int__(self, playbook_item: TaskPlaybookItem, parent: "WorkerTreeNode" = None):
-        self.playbook_item = playbook_item
+    def __init__(self, action_or_pipe: Container, bindings: Dict[str, Any] = {}, parent: "PlaybookNode" = None):
+        self.id = str(uuid.uuid4())
+        self.parent = parent
+        self.action_or_pipe = action_or_pipe
+        self.bindings = bindings
         self.nodes = []
 
     @abstractmethod
@@ -14,8 +28,48 @@ class WorkerTreeNode(Generic[T], ABC):
         pass
 
     def instantiate(self) -> T:
-        return self.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
+        return self.action_or_pipe.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
 
-    @abstractmethod
-    def add_node(self, playbook_item: TaskPlaybookItem):
-        pass
+    @staticmethod
+    def create(action_or_pipe: Container, bindings: Dict[str, Any], parent: "PlaybookNode" = None):
+        from .task_playbook import PipePlaybookNode, ActionPlaybookNode
+        if isinstance(action_or_pipe.metadata, ActionDecoratorMetaData):
+            return ActionPlaybookNode(action_or_pipe=action_or_pipe, bindings=bindings, parent=parent)
+        elif isinstance(action_or_pipe.metadata, DataPipeDecoratorMetaData):
+            return PipePlaybookNode(action_or_pipe=action_or_pipe, bindings=bindings, parent=parent)
+
+    def add_node(self, action_or_pipe: Container, bindings: Dict[str, Any]):
+        self.nodes.append(PlaybookNode.create(action_or_pipe=action_or_pipe, bindings=bindings, parent=self))
+
+
+class PipePlaybookNode(PlaybookNode[Pipe]):
+
+    def run(self):
+        print(f"running Pipe {self.action_or_pipe.metadata.target.__name__} ...")
+        try:
+            instance: Pipe = self.instantiate()
+            instance.options(options=self.bindings)
+            for node in self.nodes:
+                node.run()
+            instance.accumulate()
+        except Exception as e:
+            print(f"error running Pipe {self.action_or_pipe.metadata.target.__name__}")
+
+
+class ActionPlaybookNode(PlaybookNode[Action]):
+
+    def run(self):
+        print(f"running action {self.action_or_pipe.metadata.target.__name__} ...")
+        try:
+            instance: Action = self.instantiate()
+            instance.options(options=self.bindings)
+            instance.run()
+
+            for node in self.nodes:
+                node.run()
+
+        except Exception as e:
+            print(f"error running action {self.action_or_pipe.metadata.target.__name__}")
+
+
+TaskPlaybook = List[PlaybookNode]

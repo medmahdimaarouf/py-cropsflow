@@ -1,6 +1,6 @@
 from ..injector import Task
 
 
-class TaskEngine:
+class Engine:
     def run(self, task: Task):
         pass

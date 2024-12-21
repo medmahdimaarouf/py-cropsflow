@@ -2,6 +2,7 @@ from typing import Type, Any
 
 from common.abstracts import Init
 from .application import Application
+from .engine.task_builder import build_task
 from .injector import load_dependencies
 from .inspector import Inspector
 from .scanner.dependency_scanner import DependencyScanner
@@ -25,7 +26,10 @@ def build_tasks(inspector: Inspector) -> bool:
             print(str(e))
 
         print(f"building task '{task.metadata.target.__name__}' ...")
-        if task.build(errorCallback) is True:
+
+        build_task(task=task, error_callback=errorCallback)
+
+        if has_errors is True:
             print(f"build task '{task.metadata.target.__name__}' completed successfully")
         else:
             print(f"build task '{task.metadata.target.__name__}' Failed")
