@@ -4,7 +4,7 @@ from common.decorators import OptionMetaData
 from .task_playbook import TaskPlaybook, PlaybookNode
 from ..injector import Container, Task
 from ..parser import TaskPlaybookParseNode, parse_task_template, TaskParseTree
-from ..scanner.metadata_scanner import scan_class_options
+from core.inspector.metadata_inspector import scan_class_options
 
 task_playbook_item_core_keys = ['pipe', 'pipe_accessor']
 

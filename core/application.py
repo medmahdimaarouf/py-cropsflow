@@ -4,7 +4,7 @@ from common.decorators import InjectionScope, service
 from common.utils import InjectionToken
 from .injector.container import Container
 from .injector.module import Module
-from .scanner.metadata_scanner import scanServiceMetaData
+from core.inspector.metadata_inspector import scanServiceMetaData
 
 
 @service(scope=InjectionScope.DEFAULT)

@@ -1,15 +1,15 @@
 import uuid
 from inspect import isclass
-from typing import Dict, Generic, TypeVar, Union
+from typing import Generic, TypeVar, Union
 
 from common.decorators import ProviderMetaData, ValueProviderMetaData, DataPipeDecoratorMetaData, \
     ActionDecoratorMetaData, InjectionScope
+from common.decorators import TaskDecoratorMetaData
 from common.schemas import DecoratorMetaData
 from common.utils import InjectionToken, stringify_injection_token
 from .injector import Injector, NULL_INJECTOR
 from ..abstracts.base_container import BaseContainer
 from ..abstracts.base_injector import BaseInjector
-from common.decorators import TaskDecoratorMetaData
 
 T = TypeVar('T')
 

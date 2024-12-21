@@ -1,7 +1,7 @@
 from typing import TypeVar, Generic
 
-from core.injector.container import Container
 from common.utils import InjectionToken
+from ..injector.container import Container
 
 T = TypeVar('T', bound=Container)
 

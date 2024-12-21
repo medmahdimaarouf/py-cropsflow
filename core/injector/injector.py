@@ -1,4 +1,3 @@
-from inspect import Parameter, signature
 from typing import TypeVar, Generic
 
 from common.decorators import *
@@ -6,7 +5,7 @@ from common.utils import stringify_injection_token
 from ..abstracts import BaseInjector, ResolveStatus
 from ..abstracts.base_container import BaseContainer
 from ..exceptions import CircularDependenciesException
-from ..scanner.metadata_scanner import scan_factory_injects, scan_class_injects
+from ..inspector.metadata_inspector import scan_factory_injects, scan_class_injects
 
 T = TypeVar('T')
 

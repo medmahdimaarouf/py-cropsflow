@@ -5,12 +5,11 @@ from common.decorators import InjectionScope
 from .abstracts import ResolveStatus
 from .application import Application
 from .engine.task_builder import build_task
-from .inspector import Inspector
-from .scanner.dependency_scanner import DependencyScanner
+from core.inspector.inspector import Inspector
 
 
-def load_dependencies(inspector: Inspector):
-    for module in inspector.modules.values():
+def load_dependencies(app: Application):
+    for module in app.modules.values():
         for dep in module.deps.values():
             dep.resolve_status = ResolveStatus.PENDING
             dep.injector.resolve(scope=InjectionScope.DEFAULT)
@@ -48,7 +47,7 @@ class ApplicationFactory:
 
     def init(self, t: Type[Any]) -> Application:
         application: Application = Application()
-        scanner = DependencyScanner(app=application)
+        scanner = Inspector(app=application)
         try:
             print("Initializing ...")
             scanner.scan(t)
