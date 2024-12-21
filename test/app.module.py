@@ -27,7 +27,7 @@ class AppModule:
 def start():
     f = ApplicationFactory()
     app = f.init(AppModule)
-
+    print(app.get_name())
 
 if __name__ == '__main__':
     start()

@@ -7,13 +7,14 @@ from .metadata_scanner import *
 from ..injector.module import Module
 from ..inspector import Inspector, DependencyWrap
 from ..utils import is_function
+from ..application import Application
 
 
 class DependencyScanner:
     inspector: Inspector
 
-    def __init__(self, inspector: Inspector):
-        self.inspector = inspector
+    def __init__(self, app: Application):
+        self.inspector = Inspector(app)
 
     def scan(self, dep: Union[ModuleDef, Type[Any]]):
         self.scan_module(dep)
@@ -68,7 +69,7 @@ class DependencyScanner:
                 elif isDecorated(dec, ACTION_WATERMARK):
                     module.register_action(metadata=scanActionMetaData(dec))
                 elif isDecorated(dec, PIPE_WATERMARK):
-                    self.inspector.register_pipe(metadata=scanDataPipeMetaData(dec), module=module)
+                    module.register_pipe(metadata=scanDataPipeMetaData(dec))
                 elif isDecorated(dec, INJECTABLE_WATERMARK):
                     raise ValueError(
                         f'Declaration {dec.__name__} of the @Module {module.metadata.target.__name__} is a Service')
@@ -77,8 +78,8 @@ class DependencyScanner:
                         f'Unknown declaration {dec.__name__} in @Module {module.metadata.target.__name__}')
 
     def bind_dependencies(self):
-        if len(self.inspector.modules):
-            self._expose_module(next(iter(self.inspector.modules.values())))
+        if len(self.inspector.app.modules):
+            self._expose_module(next(iter(self.inspector.app.modules.values())))
 
     def _expose_module(self, module: Module):
         if len(module.imports.values()):

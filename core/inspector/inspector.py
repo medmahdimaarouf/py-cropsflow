@@ -1,37 +1,30 @@
 from typing import Dict, Any, List
 
-from common.decorators import ModuleDecoratorMetaData, TaskDecoratorMetaData, ActionDecoratorMetaData, \
-    DataPipeDecoratorMetaData, ServiceDecoratorMetaData
+from common.decorators import ModuleDecoratorMetaData, TaskDecoratorMetaData
 from common.utils import InjectionToken
 from .dependency_wrapper import DependencyWrap
 from .tokens_generator import _generate_token
+from ..application import Application
 from ..injector.module import Module
-from ..injector.container import Container
 
 
 class Inspector:
-    modules: Dict[InjectionToken, Module] = {}
-    tasks: Dict[InjectionToken, Any] = {}
-    services: Dict[InjectionToken, Any] = {}
-    groups: Dict[InjectionToken, Any] = {}
-    global_modules: List[Module] = []
-    global_tasks: Dict[InjectionToken, Any] = []
-    container: Container
+    app: Application
 
-    def __init__(self, container: Container):
-        self.container = container
+    def __init__(self, container: Application):
+        self.app = container
 
     def register_module(self, module_metadata: ModuleDecoratorMetaData, dynamic: bool = False,
                         is_global: bool = False) -> DependencyWrap:
         token = module_metadata.target if not dynamic else _generate_token(module_metadata)
-        module = self.modules.get(module_metadata.target)
+        module = self.app.modules.get(module_metadata.target)
         exists = module is not None
         if dynamic or not exists:
-            module = self.modules[token] = Module(metadata=module_metadata, host=self.container)
+            module = self.app.modules[token] = Module(metadata=module_metadata, host=self.app)
             module.is_global = is_global
             if is_global:
-                if self.global_modules.get(token) is None:
-                    self.global_modules[token] = module
+                if self.app.global_modules.get(token) is None:
+                    self.app.global_modules[token] = module
                 else:
                     raise Exception(f'Duplicated global module {module.metadata.target.__name__}')
 
@@ -39,24 +32,14 @@ class Inspector:
 
     def get_modules(self, dynamic: bool = None) -> List[Module]:
         if dynamic is None:
-            return list(self.modules.values())
+            return list(self.app.modules.values())
         else:
-            return [module for token, module in self.modules.items() if token != module.metadata.target == dynamic]
+            return [module for token, module in self.app.modules.items() if
+                    token != module.metadata.target == dynamic]
 
     def register_task(self, metadata: TaskDecoratorMetaData, module: Module):
         task = module.register_task(metadata=metadata)
-        self.tasks[metadata.target] = task
+        self.app.tasks[metadata.target] = task
 
     def get_task(self, token: InjectionToken) -> Any:
-        return self.tasks.get(token)
-
-    def register_action(self, metadata: ActionDecoratorMetaData, module: Module):
-        module.register_action(metadata)
-
-    def register_pipe(self, metadata: DataPipeDecoratorMetaData, module: Module):
-        if module is not None:
-            if module.deps.get(metadata.target) is None:
-                module.deps[metadata.target] = Container(metadata=metadata, host=module)
-            else:
-                raise Exception(
-                    f'Pipe {metadata.target.__name__} already exists in @Module {module.metadata.target.__name__}')
+        return self.app.tasks.get(token)

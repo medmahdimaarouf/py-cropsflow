@@ -1,7 +1,8 @@
 from typing import Type, Any, Dict
 
 from .container import Container
-from common.decorators import ModuleDecoratorMetaData, ProviderMetaData, TaskDecoratorMetaData, ActionDecoratorMetaData
+from common.decorators import ModuleDecoratorMetaData, ProviderMetaData, TaskDecoratorMetaData, ActionDecoratorMetaData, \
+    DataPipeDecoratorMetaData
 from common.utils import InjectionToken
 from .task import Task
 
@@ -52,4 +53,9 @@ class Module(Container):
             raise Exception(
                 f'Action {metadata.target.__name__} already exists in @Module {self.get_name()}')
 
-
+    def register_pipe(self, metadata: DataPipeDecoratorMetaData):
+        if self.deps.get(metadata.target) is None:
+            self.deps[metadata.target] = Container(metadata=metadata, host=self)
+        else:
+            raise Exception(
+                f'Pipe {metadata.target.__name__} already exists in @Module {self.get_name()}')

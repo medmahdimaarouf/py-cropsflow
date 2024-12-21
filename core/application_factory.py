@@ -1,24 +1,32 @@
 from typing import Type, Any
 
 from common.abstracts import Init
+from common.decorators import InjectionScope
+from .abstracts import ResolveStatus
 from .application import Application
 from .engine.task_builder import build_task
-from .injector import load_dependencies
 from .inspector import Inspector
 from .scanner.dependency_scanner import DependencyScanner
 
 
-def initialize_modules(inspector: Inspector):
-    load_dependencies(inspector)
+def load_dependencies(inspector: Inspector):
     for module in inspector.modules.values():
+        for dep in module.deps.values():
+            dep.resolve_status = ResolveStatus.PENDING
+            dep.injector.resolve(scope=InjectionScope.DEFAULT)
+
+
+def initialize_modules(app: Application):
+    load_dependencies(app)
+    for module in app.modules.values():
         instance: Init = module.get().resolve()
         if issubclass(type(instance), Init):
             instance.init(**module.injector.resolve_all())
 
 
-def build_tasks(inspector: Inspector) -> bool:
+def build_tasks(app: Application) -> bool:
     has_errors: bool = False
-    for token, task in inspector.tasks.items():
+    for token, task in app.tasks.items():
 
         def errorCallback(e: Exception):
             nonlocal has_errors
@@ -40,17 +48,17 @@ class ApplicationFactory:
 
     def init(self, t: Type[Any]) -> Application:
         application: Application = Application()
-        inspector = Inspector(container=application.container)
-        scanner = DependencyScanner(inspector)
+        scanner = DependencyScanner(app=application)
         try:
             print("Initializing ...")
             scanner.scan(t)
             print('Modules initializing...')
-            initialize_modules(inspector)
+            initialize_modules(application)
             print('Building tasks ...')
-            if build_tasks(inspector):
+            if build_tasks(application):
                 print('Application initialized successfully')
             else:
                 print('Build tasks failed')
         except Exception as e:
             raise e
+        return application
