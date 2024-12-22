@@ -1,4 +1,3 @@
-
 <p align="center">
   <a href="http://proxtractor.com/" target="blank"><img src="https://res.cloudinary.com/medmahdimaarouf/image/upload/v1690126172/Proxtractor/prx-logo-dark.svg" width="120" alt="Proxtractor Logo" /></a>
 </p>
@@ -7,159 +6,117 @@
 
 ## Description
 
-Proxtractor cloud for running automated web services
+CropsFlow cloud for running automated web services
 
-The CLI works with [schematics](https://github.com/angular/angular-cli/tree/master/packages/angular_devkit/schematics), and provides built in support from the schematics collection at [@proxtractor/proxtractor-schematics](https://github.com/proxtractor/proxtractor-schematics).
+The CLI provides built in support from the schematics collection
+at [@cropsflow/schematics](https://github.com/cropsflow/schematics).
 
-Read more [here](https://docs.proxtractor.com/cli/overview).
+Read more [here](https://docs.cropsflow.com/cli/overview).
 
 ## Installation
 
 ```
-$ npm install -g @proxtractor/cli
+$ pip install cropsflow
 
-```
-
-## Pipe example should be
-
-```
-@PrxPipe({
-    // required for task xml selector 
-    selector:"my-pipe",
-})
-export class MyPipe extends BaseDataPipe<IDataSchemaNode>{
-
-    accumulate(value:IDataSchemaNode):void{
-
-    }
-
-    @Accumulator({name:"email",required:boolean})
-    accumulateEmail(value:TextSchemaNode):void{
-        //accumulate your nodeValue data fields/items.
-        this.value = value;
-    }
-}
 ```
 
 ## Action example should be
 
 ```
-@PrxAction({
-    // required for task xml template 
-    selector:"my-action",
-})
-export class MyAction /* implement Action lifecycle like OnInit , OnDestroy , OnSuccess , OnDataRecived .... */{
-    @Option({name:string,required:boolean})
+@action(selector='my-pipe')
+@option(key='my-option',meta_type:str})
+class MyAction(Action):
 
-    constructor(){private driver:MyDriver /* other dependecies*/}
+    # Dependency injection
+    @inject(arg_name='driver',token=Driver)
+    def __init__(self,driver:Driver):
+        self.driver = driver
 
-    start(context:ActionContext):ActionObservable<ActionContext>{
-        return new ActionObservable((async subscriber=>{
-            // this.driver.agent. ...
-            await subscriber.next(context);
-            subscriber.complete()
-        }))
-    }
-}
-```
-NB : - Action can have pipe class as a injected dependency
-- Action should have driver agent type generic type.
-
-```
-@PrxInjectable({
-    // Injectable params coming soon
-})
-export class ChromiumAgent{
-    // configuration values injected from PrxConfigService for environment variables
-    @Config({name:string,required:boolean})
-
-    constructor(){}
-
-}
+    def start(self,context:ActionContext,options:Dic[str,any] = {}):
+        pass
 ```
 
+## Pipe example should be
+
+```
+@pipe(selector='my-pipe')
+class MyPipe(Pipe):
+
+    accumulate(self,value:DataModel,accessor:str =  None):
+        # accumulate your nodeValue data fields/items.
+        this.value = value;
+```
+
+## Service example should be
+
+```
+@service(scope=InjectionScope.DEFAULT)
+class Driver:
+    
+    def __init__(self):
+        pass
+
+```
 
 ## Task example should be
+
 ```
-@PrxTask({
-    template:"robot.xml"
-})
-/*
+@task(template='robot.xml')
+'''
  ** Task lifecylces **
 OnInit          : Task initialized lifecycle
 OnSuccess       : Task finished with success
 OnDataRecived   : Data recived and beeing to pass to pipe .
 OnError         : Task finish with error
-*/
-export MyTask implements OnInit , OnSuccess , OnDataRecived , OnError{
-
-}
+'''
+class MyTask(Init):
+    
+    def __init__(self):
+        pass
 ```
+
 ## Task template should be
 
 ```
-<?xml version="1.0" encoding="UTF-8" ?>
-<task>
-    <title>Task title here</title>
-    <description>
-        <!-- Task description here -->
-    </description>
-    <version>1.0</version>
-    <input>
-        <schema>
-        </schema>
-    </input>
-    <script>
-        <pipe-selector>
-            <!--
-                The engine will affect each action return data to each pipe accumulator in key order.
-                If you do not give a pipe accumulator key , the engine will use default pipe accumulator.
-                If the key is not found , it will use argumented pipe accumulator.
-                -->
-            <action-selector pipe-option-key="value" for="parent-pipe-accumulator">
-            </action-selector>
-            <action-selector>
-            </action-selector>
-        </pipe-selector>
-    </script>
+<?xml version="1.0" encoding="UTF-8"?>
+<task dataset="brand-items">
+    <meta>
+        <title>Example task</title>
+        <version>1.0</version>
+        <description>
+            Example task for running multi actions 
+        </description>
+        <tags>
+            task,automation,robots
+        </tags>
+        <readme src="./readme.md"/>
+    </meta>
+    <playbook>
+        <sleep seconds="2">
+            <sleep seconds="1"/>
+            <sleep seconds="2"/>
+            <sleep seconds="3"/>
+        </sleep>
+    </playbook>
 </task>
+```
+
+# Proxtarctor modules design
 
 ```
-## Project schemantics ( to be updated in order of starter projects )
+@module(
+    declarations=[],
+    imports=[CommonModule],
+    exports=[],
+    providers=[]
+)
+# this a Initialized Module example
+class MyModule(Init):
 
+    def __init__(self):
+        pass
+        
+    # This method will be called in application initallization         
+    def init(self):
+        pass
 ```
-src
-    pipes
-        main.pipe.ts
-    tasks
-        main.task.ts
-        main.task.xml
-    modules
-        app.module.ts
-main.ts
-.gitingore
-.env    
-package.json  
-tsconig.json  
-readme.md
-```
-#Proxtarctor modules design
-
-```
-@PrxModule({
-    // deprecated option
-    declarations:[],
-    imports:[],
-    exports:[],
-    // providers in this module
-    providers:[]
-})
-export class MyModule {
-    
-}
-```
-# Features
-
-Task Option Multi-selection value options ( example : button type in click puppeteer action .)
-
-
