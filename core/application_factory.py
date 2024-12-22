@@ -49,15 +49,19 @@ class ApplicationFactory:
     def init(self, t: Type[Any]) -> Application:
         application: Application = Application()
         scanner = Inspector(app=application)
-        try:
-            print("Initializing ...")
-            scanner.scan(t)
-            print('Modules initializing...')
-            initialize_modules(application)
-            print('Building tasks ...')
-            build_tasks(application)
-            print('Application initialized successfully')
-        except Exception as e:
-            print(e)
-            return None
+        print("Initializing ...")
+        scanner.scan(t)
+        print('Modules initializing...')
+        initialize_modules(application)
+        print('Building tasks ...')
+        build_tasks(application)
+        print('Application initialized successfully')
+
         return application
+
+    def start(self, t: Type[Any]) -> Application:
+        try:
+            return self.init(t)
+        except Exception as e:
+            print(str(e))
+            return None

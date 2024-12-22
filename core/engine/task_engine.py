@@ -1,4 +1,4 @@
-from typing import List, Type
+from typing import List, Type, Dict, Union
 
 from .task_worker import TaskWorker
 from ..injector import Task
@@ -8,15 +8,39 @@ from .task_builder import build_task
 
 class Engine:
     application: Application
-    workers: List[TaskWorker]
+    workers: Dict[str, TaskWorker]
 
     def __init__(self, application: Application):
         self.application = application
-        self.workers = []
+        self.workers = {}
 
-    async def run(self, meta_type: Type):
+    def create_worker(self, meta_type: Type) -> TaskWorker:
         task = self.application.task(meta_type)
         template = build_task(task)
         worker = TaskWorker(playbook=template.playbook)
-        self.workers.append(worker)
-        await worker.run()
+        self.workers[worker.id] = worker
+        return worker
+
+    def get_worker(self, worker_id) -> Union[TaskWorker, None]:
+        return self.workers.get(worker_id, None)
+
+    def stop_worker(self, worker_id: str) -> None:
+        worker: TaskWorker = self.workers.get(worker_id, None);
+        if worker is not None:
+            worker.stop()
+
+    def start_worker(self, worker_id: str) -> None:
+        worker: TaskWorker = self.workers.get(worker_id, None);
+        if worker is not None:
+            worker.run()
+
+    def pause_worker(self, worker_id: str) -> None:
+        worker: TaskWorker = self.workers.get(worker_id, None);
+        if worker is not None:
+            worker.pause()
+
+    def terminate_worker(self, worker_id: str) -> None:
+        worker: TaskWorker = self.workers.get(worker_id, None);
+        if worker is not None:
+            worker.stop()
+        self.workers.pop(worker_id, None)

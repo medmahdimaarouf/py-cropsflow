@@ -10,5 +10,5 @@ class Pipe(ABC):
     data: DataModel
 
     @abstractmethod
-    def accumulate(self, data: DataModel, accessor: str) -> None:
+    def accumulate(self, data: DataModel, accessor: str = None, options: Dict[str, Any] = {}) -> None:
         pass

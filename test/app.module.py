@@ -1,9 +1,11 @@
-from common import CommonModule, ValueProviderMetaData
-from core.application_factory import ApplicationFactory
-
-from common.decorators import inject, FactoryProviderMetaData, module
-from tasks import *
 import asyncio
+import cProfile
+
+from common import CommonModule, ValueProviderMetaData
+from common.decorators import inject, FactoryProviderMetaData, module
+from core import CropsFlow
+from core.engine import TaskWorker
+from tasks import *
 
 
 @inject(arg_name='v', token='p1')
@@ -17,20 +19,22 @@ def provider_function(v: int) -> str:
     providers=[
         ValueProviderMetaData(provide="p1", use_value=1),
         FactoryProviderMetaData(provide='provider_function', use_factory=provider_function)
-    ],
-    exports=[]
+    ]
 )
 class AppModule:
     def __init__(self):
         pass
 
 
-def start():
-    f = ApplicationFactory()
-    app = f.init(AppModule)
+async def start():
+    app = CropsFlow.start(AppModule)
     print("Starting")
-    asyncio.run(app.engine.run(AppTask))
+    worker: TaskWorker = app.engine.create_worker(AppTask)
+    #asyncio.run(worker.start_async())
+    worker.start()
+    await asyncio.sleep(4)
+    print("Finished")
 
 
 if __name__ == '__main__':
-    start()
+    asyncio.run(start())

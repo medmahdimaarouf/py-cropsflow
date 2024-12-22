@@ -1,6 +1,7 @@
 import uuid
 from abc import abstractmethod, ABC
 from dataclasses import field
+from copy import copy
 from typing import Generic, List, TypeVar, Dict, Any
 from ..injector import Container
 from common.decorators import InjectionScope, ActionDecoratorMetaData, DataPipeDecoratorMetaData
@@ -24,7 +25,7 @@ class PlaybookNode(Generic[T], ABC):
         self.nodes = []
 
     @abstractmethod
-    def run(self):
+    def run(self, context: TaskContext) -> TaskContext:
         pass
 
     def instantiate(self) -> T:
@@ -44,29 +45,34 @@ class PlaybookNode(Generic[T], ABC):
 
 class PipePlaybookNode(PlaybookNode[Pipe]):
 
-    async def run(self):
+    async def run(self, context: TaskContext) -> TaskContext:
+        context = copy(context)
         print(f"running Pipe {self.action_or_pipe.metadata.target.__name__} ...")
         try:
             instance: Pipe = self.instantiate()
             instance.options(options=self.bindings)
             for node in self.nodes:
-                await node.run()
+                await node.run(context=context)
             instance.accumulate()
+            return context
         except Exception as e:
             print(f"error running Pipe {self.action_or_pipe.metadata.target.__name__}")
 
 
 class ActionPlaybookNode(PlaybookNode[Action]):
 
-    async def run(self):
+    async def run(self, context: TaskContext) -> TaskContext:
+        context = copy(context)
         print(f"running action {self.action_or_pipe.metadata.target.__name__} ...")
         instance: Action = self.instantiate()
 
-        await instance.run(context=TaskContext(), options=self.bindings)
+        await instance.run(context=context, options=self.bindings)
 
         for node in self.nodes:
-            await node.run()
+            await node.run(context=context)
         print(f"completed action {self.action_or_pipe.metadata.target.__name__}")
+
+        return context
 
 
 TaskPlaybook = List[PlaybookNode]
