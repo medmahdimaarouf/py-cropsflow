@@ -1,3 +1,4 @@
+import sys
 import uuid
 from abc import abstractmethod, ABC
 from dataclasses import field
@@ -47,7 +48,7 @@ class PipePlaybookNode(PlaybookNode[Pipe]):
 
     async def run(self, context: TaskContext) -> TaskContext:
         context = copy(context)
-        print(f"running Pipe {self.action_or_pipe.metadata.target.__name__} ...")
+        sys.stdout.write(f"running Pipe {self.action_or_pipe.metadata.target.__name__} ...")
         try:
             instance: Pipe = self.instantiate()
             instance.options(options=self.bindings)

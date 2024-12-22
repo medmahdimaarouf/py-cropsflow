@@ -30,9 +30,10 @@ async def start():
     app = CropsFlow.start(AppModule)
     print("Starting")
     worker: TaskWorker = app.engine.create_worker(AppTask)
-    #asyncio.run(worker.start_async())
+    #await worker.start_async()
     worker.start()
     await asyncio.sleep(4)
+    worker.stop()
     print("Finished")
 
 
