@@ -3,7 +3,7 @@ from typing import Type, Any, List, Dict, Callable
 from common.constants import *
 from common.decorators import ModuleDecoratorMetaData, ActionDecoratorMetaData, DataPipeDecoratorMetaData, \
     ServiceDecoratorMetaData, TaskDecoratorMetaData, InjectionScope, InjectMetaData, FactoryProviderMetaData
-from common.decorators.option import OptionMetaData
+from common.decorators.option import Option
 
 
 def isDecorated(meta_type: Type[Any], watermark: str) -> bool:
@@ -97,10 +97,5 @@ def scan_factory_injects(meta_data: FactoryProviderMetaData) -> Dict[str, Inject
     return injects
 
 
-def scan_class_options(cls: Type) -> Dict[str, OptionMetaData]:
-    options: Dict[str, OptionMetaData] = {}
-    for attr_name, attr_value in cls.__dict__.items():
-        option: OptionMetaData = getattr(attr_value, OPTION_DECORATOR_KEY, None)
-        if option is not None:
-            options.setdefault(option.name.strip(), option)
-    return options
+def scan_class_options(cls: Type) -> Dict[str, Option]:
+    return getattr(cls, OPTION_DECORATOR_KEY, {})

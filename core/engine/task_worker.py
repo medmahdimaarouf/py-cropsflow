@@ -10,7 +10,7 @@ class TaskWorker:
 
     async def run(self):
         for playbook_node in self.playbook:
-            playbook_node.run()
+            await playbook_node.run()
 
 
 class TaskWorkerFactory:

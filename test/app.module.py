@@ -3,6 +3,7 @@ from core.application_factory import ApplicationFactory
 
 from common.decorators import inject, FactoryProviderMetaData, module
 from tasks import *
+import asyncio
 
 
 @inject(arg_name='v', token='p1')
@@ -27,7 +28,9 @@ class AppModule:
 def start():
     f = ApplicationFactory()
     app = f.init(AppModule)
-    print(app.get_name())
+    print("Starting")
+    asyncio.run(app.engine.run(AppTask))
+
 
 if __name__ == '__main__':
     start()

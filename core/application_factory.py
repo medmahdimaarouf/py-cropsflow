@@ -23,7 +23,7 @@ def initialize_modules(app: Application):
             instance.init(**module.injector.resolve_all())
 
 
-def build_tasks(app: Application) -> bool:
+def build_tasks(app: Application):
     has_errors: bool = False
     for token, task in app.tasks.items():
 
@@ -40,7 +40,8 @@ def build_tasks(app: Application) -> bool:
             print(f"build task '{task.metadata.target.__name__}' completed successfully")
         else:
             print(f"build task '{task.metadata.target.__name__}' Failed")
-    return not has_errors
+    if has_errors:
+        raise Exception("Tasks build failed")
 
 
 class ApplicationFactory:
@@ -54,10 +55,9 @@ class ApplicationFactory:
             print('Modules initializing...')
             initialize_modules(application)
             print('Building tasks ...')
-            if build_tasks(application):
-                print('Application initialized successfully')
-            else:
-                print('Build tasks failed')
+            build_tasks(application)
+            print('Application initialized successfully')
         except Exception as e:
-            raise e
+            print(e)
+            return None
         return application

@@ -4,7 +4,7 @@ from common.decorators import InjectionScope, service
 from common.utils import InjectionToken
 from .injector.container import Container
 from .injector.module import Module
-from core.inspector.metadata_inspector import scanServiceMetaData
+from .inspector.metadata_inspector import scanServiceMetaData
 
 
 @service(scope=InjectionScope.DEFAULT)
@@ -16,6 +16,8 @@ class Application(Container):
 
     def __init__(self):
         super().__init__(metadata=scanServiceMetaData(Application), instance=self, host=None)
+        from .engine import Engine
+        self.engine = Engine(self)
 
     def group(self, path: str):
         return self.groups.get(path)

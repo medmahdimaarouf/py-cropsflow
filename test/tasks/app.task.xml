@@ -12,8 +12,10 @@
         <readme src="./readme.md"/>
     </meta>
     <playbook>
-        <sleep ms="5000">
-
+        <sleep seconds="2">
+            <sleep seconds="1"/>
+            <sleep seconds="2"/>
+            <sleep seconds="3"/>
         </sleep>
     </playbook>
 </task>

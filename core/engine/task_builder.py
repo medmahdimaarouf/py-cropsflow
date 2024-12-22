@@ -1,6 +1,7 @@
+from copy import copy
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Callable
-from common.decorators import OptionMetaData
+from common.decorators import Option
 from .task_playbook import TaskPlaybook, PlaybookNode
 from ..injector import Container, Task
 from ..parser import TaskPlaybookParseNode, parse_task_template, TaskParseTree
@@ -31,34 +32,34 @@ def build_playbook_node(task: Task, parse_node: TaskPlaybookParseNode, error_han
         raise error_handler(Exception(
             f"No action or pipe found by selector '{parse_node.selector}' in @task {task.get_name()} at line : {parse_node.line}"))
     bindings: Dict[str, Any] = {}
-    action_or_pipe_options: Dict[str, OptionMetaData] = scan_class_options(action_or_pipe.metadata.target)
-    for name, value in parse_node.options.items():
-        option = action_or_pipe_options.get(name.strip(), None)
+    action_or_pipe_options: Dict[str, Option] = copy(scan_class_options(action_or_pipe.metadata.target))
+    for key, value in parse_node.options.items():
+        option = action_or_pipe_options.get(key.strip(), None)
         if option is not None:
             # todo: parse value from field annotation type
-            bindings[name] = value
-            action_or_pipe_options.pop(name.strip())
+            bindings[key] = value
+            action_or_pipe_options.pop(key.strip())
         else:
             error_handler(Exception(
-                f"Unknown @option '{name}' for {action_or_pipe.get_name()} selected by '{parse_node.selector}' at line : {parse_node.line}"))
+                f"Unknown @option '{key}' for {action_or_pipe.get_name()} selected by '{parse_node.selector}' at line : {parse_node.line}"))
 
     if len(action_or_pipe_options):
         for key, action_or_pipe_option in action_or_pipe_options.items():
             # Todo :  replace required with optional default value check
-            if not action_or_pipe_option.required:
+            if action_or_pipe_option.default is not None:
                 continue
             error_handler(Exception(
                 f"Required option '{key}' binding for action '{action_or_pipe.get_name()}' selected by '{parse_node.selector}' at line : {parse_node.line}"))
     node = PlaybookNode.create(action_or_pipe=action_or_pipe, bindings=bindings)
     for child in parse_node.children:
-        node.add_node(build_playbook_node(task=task, parse_node=child, error_handler=error_handler))
+        node.nodes.append(build_playbook_node(task=task, parse_node=child, error_handler=error_handler))
     return node
 
 
 def build_task(task: Task, error_callback: Callable = None) -> TaskTemplate:
     has_error: bool = False
 
-    def handleError(e):
+    def handle_error(e):
         nonlocal has_error
         has_error = True
         if error_callback:
@@ -66,12 +67,12 @@ def build_task(task: Task, error_callback: Callable = None) -> TaskTemplate:
         else:
             raise e
 
-    task_parse_tree: TaskParseTree = parse_task_template(task.metadata.template, error_callback)
+    task_parse_tree: TaskParseTree = parse_task_template(task.metadata.template, handle_error)
     task_playbook: TaskPlaybook = []
 
     for playbook_item_node in task_parse_tree.playbook:
         playbook_item: PlaybookNode = build_playbook_node(task=task, parse_node=playbook_item_node,
-                                                          error_handler=error_callback)
+                                                          error_handler=handle_error)
         task_playbook.append(playbook_item)
     return TaskTemplate(meta_data=task_parse_tree.meta_data, dataset=task_parse_tree.dataset,
                         bucket=task_parse_tree.bucket, playbook=task_playbook)

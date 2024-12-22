@@ -1,17 +1,23 @@
-from typing import Callable, Any, List
+from typing import Callable, Any, List, Type, TypeVar
 
-from .option_metadata import OptionMetaData
+from .option_metadata import Option
 from ...constants import OPTION_DECORATOR_KEY
 
+T = TypeVar('T')
 
-def option(name: str, required: bool = False, default: Any = None, select: List[Any] = None) -> Callable:
+
+def option(key: str, meta_type: Type[T] = None, default: T = None, select: List[T] = None) -> Callable:
     """
     This option decorator
     """
 
-    def decorator(func):
-        setattr(func, OPTION_DECORATOR_KEY,
-                OptionMetaData(setter_name=func.__name__, name=name, required=required, default=default, select=select))
-        return func
+    def decorator(cls):
+        options = getattr(cls, OPTION_DECORATOR_KEY, {})
+        if options.get(key.strip()) is None:
+            options[key.strip()] = Option(key=key, meta_type=meta_type, default=default, select=select)
+        else:
+            raise Exception(f"The @option '{key}' is already defined in {cls.__name__}")
+        setattr(cls, OPTION_DECORATOR_KEY, options)
+        return cls
 
     return decorator

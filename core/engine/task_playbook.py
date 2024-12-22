@@ -4,7 +4,7 @@ from dataclasses import field
 from typing import Generic, List, TypeVar, Dict, Any
 from ..injector import Container
 from common.decorators import InjectionScope, ActionDecoratorMetaData, DataPipeDecoratorMetaData
-from common.abstracts import Action, Pipe
+from common.abstracts import Action, Pipe, TaskContext
 
 T = TypeVar('T')
 
@@ -44,13 +44,13 @@ class PlaybookNode(Generic[T], ABC):
 
 class PipePlaybookNode(PlaybookNode[Pipe]):
 
-    def run(self):
+    async def run(self):
         print(f"running Pipe {self.action_or_pipe.metadata.target.__name__} ...")
         try:
             instance: Pipe = self.instantiate()
             instance.options(options=self.bindings)
             for node in self.nodes:
-                node.run()
+                await node.run()
             instance.accumulate()
         except Exception as e:
             print(f"error running Pipe {self.action_or_pipe.metadata.target.__name__}")
@@ -58,18 +58,15 @@ class PipePlaybookNode(PlaybookNode[Pipe]):
 
 class ActionPlaybookNode(PlaybookNode[Action]):
 
-    def run(self):
+    async def run(self):
         print(f"running action {self.action_or_pipe.metadata.target.__name__} ...")
-        try:
-            instance: Action = self.instantiate()
-            instance.options(options=self.bindings)
-            instance.run()
+        instance: Action = self.instantiate()
 
-            for node in self.nodes:
-                node.run()
+        await instance.run(context=TaskContext(), options=self.bindings)
 
-        except Exception as e:
-            print(f"error running action {self.action_or_pipe.metadata.target.__name__}")
+        for node in self.nodes:
+            await node.run()
+        print(f"completed action {self.action_or_pipe.metadata.target.__name__}")
 
 
 TaskPlaybook = List[PlaybookNode]
