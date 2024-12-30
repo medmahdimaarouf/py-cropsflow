@@ -12,6 +12,7 @@ class Action(ABC):
     def __init__(self):
         self.nextCallBack = None
         self.task = None
+        self.data = None
 
     @abstractmethod
     async def run(self, context: TaskContext, options: Dict[str, Any] = {}) -> TaskContext:
@@ -45,3 +46,9 @@ class Action(ABC):
 
     def complete(self, context: TaskContext = None):
         self.stop()
+
+    def set_data(self, data: any) -> None:
+        self.data = data
+
+    def get_data(self) -> any:
+        return self.data
