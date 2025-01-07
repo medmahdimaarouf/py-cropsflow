@@ -40,6 +40,15 @@ class ValueProviderMetaData(ProviderMetaData):
         self.use_value = use_value
 
 
+@dataclass()
+class ExistsProvider(ProviderMetaData):
+    use_exists: InjectionToken = field(default_factory=str)
+
+    def __init__(self, provide: InjectionToken, use_exists: InjectionToken):
+        super().__init__(provide=provide)
+        self.use_exists = use_exists
+
+
 ProviderDef = Union[Type, ProviderMetaData]
 
 
@@ -49,9 +58,9 @@ class DynamicModule:
     module: Type[Any] = field(default_factory=Type)
     is_global: bool = field(default_factory=bool)
 
-    def __init__(self, module: Type[Any], provider: Type[ProviderDef], is_global: bool):
+    def __init__(self, module: Type[Any], providers: List[ProviderDef], is_global: bool):
         self.module = module
-        self.provider = provider
+        self.providers = providers
         self.is_global = is_global
 
 

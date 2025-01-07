@@ -42,8 +42,11 @@ class Injector(Generic[T], BaseInjector[T]):
             return self.instance
         else:
             injector = self.container.get(token=token)
-            if injector == NULL_INJECTOR and optional:
-                return None
+            if injector == NULL_INJECTOR:
+                if optional:
+                    return None
+                else:
+                    injector.resolve(token)
             else:
                 return injector.resolve(scope=scope, optional=optional)
 
@@ -60,6 +63,8 @@ class Injector(Generic[T], BaseInjector[T]):
             return self.resolve_factory_provider(meta_data)
         elif isinstance(meta_data, ValueProviderMetaData):
             return meta_data.use_value
+        elif isinstance(meta_data, ExistsProvider):
+            return self.resolve(meta_data.use_exists)
         else:
             raise Exception("Unknown provider metadata " + str(meta_data.__class__.__name__))
 
@@ -104,7 +109,6 @@ class Injector(Generic[T], BaseInjector[T]):
                 resolved_parameters[param_name] = self.resolve(token=inject_meta_data.token,
                                                                scope=inject_meta_data.scope,
                                                                optional=inject_meta_data.optional)
-
             return resolved_parameters
         except CircularDependenciesException as e:
             if self.resolve_status == ResolveStatus.PENDING:
