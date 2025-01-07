@@ -1,5 +1,7 @@
 from .action import *
 from .data_model import *
+from .dataset import *
+from .dataset_adapter import *
 from .pipe import *
 from .init import *
 from .iterable_datamodel import *
