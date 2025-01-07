@@ -1,11 +1,15 @@
+import asyncio
+import sys
+import traceback
 from typing import Type, Any
 
 from cropsflow.common.abstracts import Init
 from cropsflow.common.decorators import InjectionScope
+from . import print_traceback
 from .abstracts import ResolveStatus
 from .application import Application
 from .engine.task_builder import build_task
-from cropsflow.core.inspector.inspector import Inspector
+from .inspector.inspector import Inspector
 
 
 def load_dependencies(app: Application):
@@ -15,12 +19,17 @@ def load_dependencies(app: Application):
             dep.injector.resolve(scope=InjectionScope.DEFAULT)
 
 
-def initialize_modules(app: Application):
+async def initialize_modules(app: Application):
     load_dependencies(app)
     for module in app.modules.values():
         instance: Init = module.get().resolve()
         if issubclass(type(instance), Init):
-            instance.init(**module.injector.resolve_all())
+            try:
+                await instance.init(**module.injector.resolve_class_method_deps(module.metadata.target, instance.init))
+            except Exception as e:
+                print(f"Error initializing module {module.metadata.target.__name__}")
+                # print_traceback()
+                raise e
 
 
 def build_tasks(app: Application):
@@ -46,22 +55,25 @@ def build_tasks(app: Application):
 
 class ApplicationFactory:
 
-    def init(self, t: Type[Any]) -> Application:
+    async def init(self, t: Type[Any]) -> Application:
         application: Application = Application()
         scanner = Inspector(app=application)
         print("Initializing ...")
         scanner.scan(t)
         print('Modules initializing...')
-        initialize_modules(application)
+        await initialize_modules(application)
         print('Building tasks ...')
         build_tasks(application)
         print('Application initialized successfully')
 
         return application
 
-    def start(self, t: Type[Any]) -> Application:
+    def start(self, t: Type[Any], debug: bool = False) -> Application:
         try:
             return self.init(t)
         except Exception as e:
-            print(str(e))
-            return None
+            if debug:
+                raise e
+            else:
+                print(str(e))
+                return None
