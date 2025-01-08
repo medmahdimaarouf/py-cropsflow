@@ -101,7 +101,7 @@ class MyTask(Init):
 </task>
 ```
 
-# Proxtarctor modules design
+# CropsFlow modules design
 
 ```
 @module(
