@@ -30,7 +30,7 @@ class Inspector:
             wrap = self.register_module(scanModuleMetaData(module_def.module), dynamic=True,
                                         is_global=module_def.is_global)
             for provider in module_def.providers if module_def.providers is not None else []:
-                wrap.dep.register_provider(provider)
+                wrap.dep.register(token=provider.provide, dep=provider)
         else:
             wrap = self.register_module(scanModuleMetaData(module_def))
         if wrap.inserted:

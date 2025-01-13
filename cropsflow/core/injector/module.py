@@ -1,7 +1,8 @@
 from typing import Dict
 
 from .container import Container
-from cropsflow.common.decorators import ModuleDecoratorMetaData, ProviderMetaData, TaskDecoratorMetaData, ActionDecoratorMetaData, \
+from cropsflow.common.decorators import ModuleDecoratorMetaData, ProviderMetaData, TaskDecoratorMetaData, \
+    ActionDecoratorMetaData, \
     DataPipeDecoratorMetaData
 from cropsflow.common.utils import InjectionToken
 from .task import Task
@@ -21,20 +22,14 @@ class Module(Container):
         self.is_global = False
         self.exposed = False
 
-    def is_imports(self, module: "Module") -> bool:
+    def has_import(self, module: "Module") -> bool:
         return self.imports.get(module.metadata.target) is not None
 
     def add_import(self, token: InjectionToken, module: "Module"):
-        if self.is_imports(module):
+        if self.has_import(module):
             raise ValueError(f"Module {self.metadata.target} already has an import for module {module.metadata.token}")
         else:
             self.imports[token] = module
-
-    def register_provider(self, provider: ProviderMetaData):
-        if not self.deps.get(provider.provide, None):
-            self.deps[provider.provide] = Container(provider, self)
-        else:
-            raise ValueError(f"Module {self.metadata.target} already has a provider for token {provider.provide}")
 
     def register_task(self, metadata: TaskDecoratorMetaData) -> Task:
         if not self.deps.get(metadata.target, None):

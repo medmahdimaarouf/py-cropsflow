@@ -46,7 +46,7 @@ class Injector(Generic[T], BaseInjector[T]):
                 if optional:
                     return None
                 else:
-                    injector.resolve(token)
+                    return injector.resolve(token)
             else:
                 return injector.resolve(scope=scope, optional=optional)
 
