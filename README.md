@@ -116,7 +116,11 @@ class MyModule(Init):
     def __init__(self):
         pass
         
-    # This method will be called in application initallization         
-    def init(self):
+    # This method will be called in application initallization
+    @inject(arg_name='arg1',token='ARG1_TOKEN',optional=True) 
+    def init(self,arg1:str = None):
         pass
 ```
+
+
+
