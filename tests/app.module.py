@@ -21,7 +21,7 @@ def provider_function(v: int) -> str:
 )
 class AppModule(Init):
     @inject(arg_name="i1", token="p1")
-    def init(self, i1: int) -> None:
+    async def init(self, i1: int) -> None:
         print("init : ", i1)
 
     def __init__(self):

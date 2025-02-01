@@ -25,7 +25,9 @@ async def initialize_modules(app: Application):
         instance: Init = module.get().resolve()
         if issubclass(type(instance), Init):
             try:
-                await instance.init(**module.injector.resolve_class_method_deps(module.metadata.target, instance.init))
+                deps = module.injector.resolve_class_method_deps(module.metadata.target, instance.init)
+                print(module.get_name())
+                await instance.init(**deps)
             except Exception as e:
                 print(f"Error initializing module {module.metadata.target.__name__}")
                 # print_traceback()
