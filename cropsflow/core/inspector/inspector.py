@@ -92,7 +92,13 @@ class Inspector:
 
         if len(module.metadata.exports):
             for token in module.metadata.exports:
-                if module.deps.get(token) is not None:
+                if module.imports.get(token) is not None:
+                    exported_module = module.imports.get(token)
+                    for [token, dep] in exported_module.deps.items():
+                        module.exports.setdefault(token, dep)
+                        if module.is_global:
+                            self.container.register(token, dep)
+                elif module.deps.get(token) is not None:
                     module.exports.setdefault(token, module.deps.get(token))
                     if module.is_global:
                         self.container.register(token, module.deps.get(token))
