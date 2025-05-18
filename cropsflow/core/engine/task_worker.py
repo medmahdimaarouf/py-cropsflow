@@ -2,20 +2,20 @@ import asyncio
 import threading
 import uuid
 from cropsflow.common.abstracts import TaskContext
-from .task_builder import TaskPlaybook
+from cropsflow.core.builder.task_builder import TaskPlaybook
 
 
 class TaskWorker(threading.Thread):
     id: str
     playbook: TaskPlaybook
+    _stop_event = threading.Event()
+    _pause_event = threading.Event()
+    _loop = None
 
-    def __init__(self, playbook: TaskPlaybook):
+    def __init__(self, playbook: TaskPlaybook, daemon: bool = False):
         self.id = str(uuid.uuid4())
         self.playbook = playbook
-        self._stop_event = threading.Event()
-        self._pause_event = threading.Event()
         self._pause_event.set()  # Ensure it starts unpaused
-        self._loop = None  # Store the loop reference
 
         def target():
             self._loop = asyncio.new_event_loop()
@@ -27,19 +27,13 @@ class TaskWorker(threading.Thread):
             finally:
                 self._loop.close()
 
-        super(TaskWorker, self).__init__(target=target, daemon=False)
+        super(TaskWorker, self).__init__(target=target, daemon=daemon)
 
     async def start_async(self):
         context: TaskContext = TaskContext()
         for playbook_node in self.playbook:
-            await self._pause_if_needed()  # Check if the worker is paused before running each task
             await playbook_node.run(context=context)
         print(f"TaskWorker {self.id} completed.")
-
-    async def _pause_if_needed(self):
-        """Checks if the worker should pause and waits if needed."""
-        while not self._pause_event.is_set():
-            await asyncio.sleep(0.1)  # Non-blocking sleep to allow other tasks to proceed
 
     def stop(self):
         print(f"Stopping TaskWorker {self.id}...")

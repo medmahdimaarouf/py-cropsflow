@@ -77,7 +77,7 @@ class Container(Generic[T], BaseContainer[T]):
             metadata: ActionDecoratorMetaData = dep.metadata
             if t == token or selector == metadata.selector:
                 return dep
-        return None if self.host is None else self.host.get_action(token=token, selector=selector)
+        return None if self.host is None else self.host.get_pipe(token=token, selector=selector)
 
     def register_core_providers(self):
         self.register(token=Injector, dep=ValueProviderMetaData(provide=Injector, use_value=self.injector))

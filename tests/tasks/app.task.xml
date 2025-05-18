@@ -12,8 +12,9 @@
         <readme src="./readme.md"/>
     </meta>
     <playbook>
-        <sleep seconds="2">
+        <sleep seconds="2" ff="sdf">
             <sleep seconds="1"/>
+            <map></map>
             <sleep seconds="2"/>
             <sleep seconds="3"/>
         </sleep>

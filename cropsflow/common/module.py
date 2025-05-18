@@ -1,15 +1,20 @@
 from .actions import *
+from .pipes import *
 from .decorators.module import module
 
 
 @module(
     declarations=[
         DelayAction,
-        IterateAction
+        IterateAction,
+        MapPipe,
+        ListPipe
     ],
     exports=[
         DelayAction,
-        IterateAction
+        IterateAction,
+        MapPipe,
+        ListPipe
     ]
 )
 class CommonModule:

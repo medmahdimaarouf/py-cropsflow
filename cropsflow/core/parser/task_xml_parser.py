@@ -52,8 +52,16 @@ def parse_task_xml(template_path: str, error_callback: Callable) -> TaskParseTre
         parsed_playbook: List[TaskPlaybookParseNode] = []
 
         for child in tree:
-            if child.tag == "meta":
-                parsed_metadata = parse_meta(child, error_callback)
+            if child.tag == "title":
+                parsed_metadata['title'] = child.text.strip() if child.text else None
+            elif child.tag == "version":
+                parsed_metadata['version'] = child.text.strip() if child.text else None
+            elif child.tag == "description":
+                parsed_metadata['description'] = child.text.strip() if child.text else None
+            elif child.tag == "tags":
+                parsed_metadata['tags'] = str(child.text).strip().split(',') if child.text else []
+            elif child.tag == "readme" and "src" in child.attrib:
+                parsed_metadata['readme'] = child.attrib["src"]
             elif child.tag == "playbook":
                 for playbook_item in child:
                     parsed_playbook.append(parse_playbook_item(playbook_item, error_callback))

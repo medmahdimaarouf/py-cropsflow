@@ -3,7 +3,7 @@ import uuid
 from abc import abstractmethod, ABC
 from copy import copy
 from typing import Generic, List, TypeVar, Dict, Any
-from ..injector import Container
+from cropsflow.core.injector import Container
 from cropsflow.common.decorators import InjectionScope, ActionDecoratorMetaData, DataPipeDecoratorMetaData
 from cropsflow.common.abstracts import Action, Pipe, TaskContext
 

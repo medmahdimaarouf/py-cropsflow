@@ -7,5 +7,4 @@ from ..models import DataModel
 class ListPipe(Pipe):
 
     def accumulate(self, data: DataModel, accessor: str) -> None:
-        ## self.data
         pass

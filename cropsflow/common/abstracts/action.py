@@ -52,3 +52,6 @@ class Action(ABC):
 
     def get_data(self) -> any:
         return self.data
+
+    def jump(self):
+        pass
