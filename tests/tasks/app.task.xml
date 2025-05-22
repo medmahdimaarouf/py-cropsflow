@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <task dataset="brand-items">
-    <meta>
-        <title>Fetch all brands</title>
-        <version>1.0</version>
-        <description>
-            Fetch all brands
-        </description>
-        <tags>
-            task,automation,robots
-        </tags>
-        <readme src="./readme.md"/>
-    </meta>
+    <title>Fetch all brands</title>
+    <version>1.0</version>
+    <description>
+        Fetch all brands
+    </description>
+    <tags>
+        task,automation,robots
+    </tags>
+    <readme src="./readme.md"/>
     <playbook>
         <sleep seconds="2" ff="sdf">
             <sleep seconds="1"/>

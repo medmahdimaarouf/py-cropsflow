@@ -1,6 +1,6 @@
-from cropsflow.common.decorators import service
+from ..decorators import service, InjectionScope
 
 
-@service()
-class LoggerService:
+@service(scope=InjectionScope.DEFAULT)
+class Logger:
     pass

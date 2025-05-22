@@ -5,7 +5,7 @@ from cropsflow.common.decorators import InjectionScope
 from .abstracts import ResolveStatus
 from .application import Application
 from cropsflow.core.builder.task_builder import build_task
-from .inspector.inspector import Inspector
+from .scanner.dependency_scanner import DependenciesScanner
 from .exceptions.builder import TaskBuildException
 
 
@@ -53,10 +53,10 @@ def build_tasks(app: Application):
 
 class ApplicationFactory:
 
-    async def start(self, t: Type[Any], debug: bool = False) -> Application:
+    async def init(self, t: Type[Any], debug: bool = False) -> Application:
         try:
             application: Application = Application()
-            scanner = Inspector(app=application)
+            scanner = DependenciesScanner(app=application)
             print("Initializing ...")
             print("scanning dependencies ...")
             scanner.scan(t)
@@ -73,3 +73,6 @@ class ApplicationFactory:
                 print(str(e))
                 raise e
                 return None
+
+    async def start(self, t: Type[Any], debug: bool = False) -> Application:
+        return await self.init(t, debug)

@@ -1,32 +1,33 @@
 from typing import Type, Dict, Union
 
 from .task_worker import TaskWorker
-from ..application import Application
+from .workers_queue import WorkersQueue
+from .workers_schedular import WorkersSchedular
+from ..injector import Container
 from ..builder.task_builder import build_task
 
 
 class Engine:
-    application: Application
+    container: Container
     workers: Dict[str, TaskWorker]
+    queue: WorkersQueue = WorkersQueue()
+    schedular: WorkersSchedular = WorkersSchedular()
 
-    def __init__(self, application: Application):
-        self.application = application
+    def __init__(self, container: Container):
+        self.container = container
         self.workers = {}
 
     def create_worker(self, meta_type: Type) -> TaskWorker:
-        task = self.application.task(meta_type)
+        task: Container = self.container.get_task(meta_type)
+        if task is None:
+            raise Exception(f'Unknown task class {meta_type.__name__}')
         template = build_task(task)
         worker = TaskWorker(playbook=template.playbook)
         self.workers[worker.id] = worker
         return worker
 
-    def get_worker(self, worker_id) -> Union[TaskWorker, None]:
+    def get_worker(self, worker_id: str) -> Union[TaskWorker, None]:
         return self.workers.get(worker_id, None)
-
-    def stop_worker(self, worker_id: str) -> None:
-        worker: TaskWorker = self.workers.get(worker_id, None);
-        if worker is not None:
-            worker.stop()
 
     def start_worker(self, worker_id: str) -> None:
         worker: TaskWorker = self.workers.get(worker_id, None);

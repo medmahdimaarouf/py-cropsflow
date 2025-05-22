@@ -7,7 +7,7 @@ from cropsflow.core.exceptions.builder import *
 from cropsflow.core.builder.task_playbook import TaskPlaybook, PlaybookNode
 from cropsflow.core.injector import Container, Task
 from cropsflow.core.parser import TaskPlaybookParseNode, parse_task_template, TaskParseTree
-from cropsflow.core.inspector.metadata_inspector import scan_class_options
+from cropsflow.core.scanner.metadata_scanner import scan_class_options
 from cropsflow.core.utils import parse_value
 
 task_playbook_item_core_keys = ['pipe', 'pipe_accessor']

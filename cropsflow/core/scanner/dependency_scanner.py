@@ -5,13 +5,13 @@ from cropsflow.common.decorators import DynamicModule, ProviderMetaData, ModuleD
 from cropsflow.common.utils import stringify_injection_token, InjectionToken
 from ..application import Application
 from ..injector.module import Module
-from ..inspector.dependency_wrapper import DependencyWrap
-from ..inspector.metadata_inspector import *
+from ..scanner.dependency_wrapper import DependencyWrap
+from ..scanner.metadata_scanner import *
 from ..utils import is_function
 from ..utils.tokens_generator import generate_token
 
 
-class Inspector:
+class DependenciesScanner:
     app: Application
 
     def __init__(self, app: Application):

@@ -5,7 +5,7 @@ from cropsflow.common.utils import stringify_injection_token
 from ..abstracts import BaseInjector, ResolveStatus
 from ..abstracts.base_container import BaseContainer
 from ..exceptions import CircularDependenciesException
-from ..inspector.metadata_inspector import scan_factory_injects, scan_class_injects
+from ..scanner.metadata_scanner import scan_factory_injects, scan_class_injects
 
 T = TypeVar('T')
 

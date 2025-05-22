@@ -2,7 +2,8 @@ from typing import Callable, Dict, List
 
 from lxml.etree import Element, XMLSyntaxError, parse
 
-from .task_parse_tree import TaskParseTree, TaskPlaybookParseNode
+from cropsflow.core.exceptions import TaskBuildException
+from cropsflow.core.parser.task_parse_tree import TaskParseTree, TaskPlaybookParseNode
 
 
 def parse_playbook_item(playbook_element: Element, error_callback: Callable) -> TaskPlaybookParseNode:
@@ -47,11 +48,11 @@ def parse_task_xml(template_path: str, error_callback: Callable) -> TaskParseTre
             raise e
 
     try:
-        tree = parse(source=template_path).getroot()
+        root = parse(source=template_path).getroot()
         parsed_metadata: Dict[str, str] = {}
         parsed_playbook: List[TaskPlaybookParseNode] = []
 
-        for child in tree:
+        for child in root:
             if child.tag == "title":
                 parsed_metadata['title'] = child.text.strip() if child.text else None
             elif child.tag == "version":
@@ -66,7 +67,7 @@ def parse_task_xml(template_path: str, error_callback: Callable) -> TaskParseTre
                 for playbook_item in child:
                     parsed_playbook.append(parse_playbook_item(playbook_item, error_callback))
             else:
-                handle_error(ValueError(f"Unknown tag '{child.tag}' found in <task>."))
+                handle_error(TaskBuildException(message=f"Unknown tag '{child.tag}' found in <task>.", template_file_path=template_path, line=1))
 
         return TaskParseTree(meta_data=parsed_metadata, playbook=parsed_playbook)
 

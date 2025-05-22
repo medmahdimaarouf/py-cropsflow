@@ -2,7 +2,9 @@ import sys
 import uuid
 from abc import abstractmethod, ABC
 from copy import copy
-from typing import Generic, List, TypeVar, Dict, Any
+from typing import Generic, List, TypeVar, Dict, Any, Optional
+
+from cropsflow import Init, Destroy
 from cropsflow.core.injector import Container
 from cropsflow.common.decorators import InjectionScope, ActionDecoratorMetaData, DataPipeDecoratorMetaData
 from cropsflow.common.abstracts import Action, Pipe, TaskContext
@@ -16,6 +18,7 @@ class PlaybookNode(Generic[T], ABC):
     action_or_pipe: Container
     bindings: Dict[str, Any]
     nodes: List["PlaybookNode"]
+    instance: T = None
 
     def __init__(self, action_or_pipe: Container, bindings: Dict[str, Any] = {}, parent: "PlaybookNode" = None):
         self.id = str(uuid.uuid4())
@@ -29,7 +32,8 @@ class PlaybookNode(Generic[T], ABC):
         pass
 
     def instantiate(self) -> T:
-        return self.action_or_pipe.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
+        self.instance = self.action_or_pipe.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
+        return self.instance
 
     @staticmethod
     def create(action_or_pipe: Container, bindings: Dict[str, Any], parent: "PlaybookNode" = None):
@@ -44,34 +48,59 @@ class PlaybookNode(Generic[T], ABC):
 
 
 class PipePlaybookNode(PlaybookNode[Pipe]):
+    accumulator_pipe: "PipePlaybookNode" = None
+
+    def __init__(self, action_or_pipe: Container, bindings: Dict[str, Any] = {}, parent: "PlaybookNode" = None):
+        super().__init__(action_or_pipe=action_or_pipe, bindings=bindings, parent=parent)
+        self.accumulator_pipe = self.find_parent_pipe(id=bindings.get('pipe'))
+        if bindings.get('pipe') is not None and self.accumulator_pipe is None:
+            raise Exception(f'Could not locate target accumulator pipe with id {bindings.get("pipe")}')
+
+    def find_parent_pipe(self, id: str = None) -> Optional["PlaybookNode"]:
+        parent: PlaybookNode = self.parent
+        while parent:
+            parent = parent.parent
+            if isinstance(parent, PipePlaybookNode) and (True if id is None else parent.bindings.get("id") == id):
+                return parent
+        return None
 
     async def run(self, context: TaskContext) -> TaskContext:
         context = copy(context)
         sys.stdout.write(f"running Pipe {self.action_or_pipe.metadata.target.__name__} ...")
         try:
-            instance: Pipe = self.instantiate()
-            instance.options(options=self.bindings)
+            self.instance: Pipe = self.instantiate()
+            if isinstance(self.instance, Init):
+                self.instance.init()
             for node in self.nodes:
                 await node.run(context=context)
-            instance.accumulate()
+            if self.accumulator_pipe is not None:
+                self.accumulator_pipe.instance.accumulate(data=self.instance.data, accessor=self.bindings.get('pipe_accessor'), options=self.bindings)
+
+            if isinstance(self.instance, Destroy):
+                self.instance.destroy()
+            del self.instance
             return context
         except Exception as e:
             print(f"error running Pipe {self.action_or_pipe.metadata.target.__name__}")
 
 
 class ActionPlaybookNode(PlaybookNode[Action]):
-
     async def run(self, context: TaskContext) -> TaskContext:
         context = copy(context)
         print(f"running action {self.action_or_pipe.metadata.target.__name__} ...")
-        instance: Action = self.instantiate()
+        self.instance = self.instantiate()
 
-        await instance.run(context=context, options=self.bindings)
+        if isinstance(self.instance, Init):
+            self.instance.init()
+        await self.instance.run(context=context, options=self.bindings)
 
         for node in self.nodes:
             await node.run(context=context)
         print(f"completed action {self.action_or_pipe.metadata.target.__name__}")
 
+        if isinstance(self.instance, Destroy):
+            self.instance.destroy()
+        del self.instance
         return context
 
 
