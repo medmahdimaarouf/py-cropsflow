@@ -7,8 +7,8 @@ from ...common.decorators import TaskDecoratorMetaData
 from cropsflow.common.schemas import DecoratorMetaData
 from cropsflow.common.utils import InjectionToken, stringify_injection_token
 from .injector import Injector, NULL_INJECTOR
-from ..abstracts.base_container import BaseContainer
-from ..abstracts.base_injector import BaseInjector
+from ..abstracts.container import BaseContainer
+from ..abstracts.injector import BaseInjector
 
 T = TypeVar('T')
 

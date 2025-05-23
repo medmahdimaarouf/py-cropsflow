@@ -1,10 +1,11 @@
 from typing import Type, Dict, Union
 
+from .runner import PlayBookRunner
+from .task_builder import TaskTemplateBuilder
 from .task_worker import TaskWorker
 from .workers_queue import WorkersQueue
 from .workers_schedular import WorkersSchedular
 from ..injector import Container
-from ..builder.task_builder import build_task
 
 
 class Engine:
@@ -21,8 +22,8 @@ class Engine:
         task: Container = self.container.get_task(meta_type)
         if task is None:
             raise Exception(f'Unknown task class {meta_type.__name__}')
-        template = build_task(task)
-        worker = TaskWorker(playbook=template.playbook)
+        template = TaskTemplateBuilder(task=task).build()
+        worker = TaskWorker(runner=PlayBookRunner(node=template.playbook))
         self.workers[worker.id] = worker
         return worker
 
@@ -33,11 +34,6 @@ class Engine:
         worker: TaskWorker = self.workers.get(worker_id, None);
         if worker is not None:
             worker.run()
-
-    def pause_worker(self, worker_id: str) -> None:
-        worker: TaskWorker = self.workers.get(worker_id, None);
-        if worker is not None:
-            worker.pause()
 
     def terminate_worker(self, worker_id: str) -> None:
         worker: TaskWorker = self.workers.get(worker_id, None);

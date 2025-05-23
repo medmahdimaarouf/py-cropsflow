@@ -1,14 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Type, Any
 
-from cropsflow.common.schemas.docorator_metadata import DecoratorMetaData
+from ...schemas import DecoratorMetaData, DecoratorMetaDataType
 
 
 @dataclass()
 class ActionDecoratorMetaData(DecoratorMetaData):
+    type = DecoratorMetaDataType.ACTION
     selector: str = field(default_factory=dict)
-
-    def __int__(self, target: Type[Any], selector: str):
-        self.type = "action"
-        self.target = target
-        self.selector = selector
+    auto_next: bool = field(default_factory=bool)

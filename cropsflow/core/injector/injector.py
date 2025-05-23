@@ -3,7 +3,7 @@ from typing import Generic
 from cropsflow.common.decorators import *
 from cropsflow.common.utils import stringify_injection_token
 from ..abstracts import BaseInjector, ResolveStatus
-from ..abstracts.base_container import BaseContainer
+from ..abstracts.container import BaseContainer
 from ..exceptions import CircularDependenciesException
 from ..scanner.metadata_scanner import scan_factory_injects, scan_class_injects
 

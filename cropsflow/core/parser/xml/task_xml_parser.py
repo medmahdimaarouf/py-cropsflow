@@ -21,7 +21,7 @@ def parse_playbook_item(playbook_element: Element, error_callback: Callable) -> 
                                  children=items)
 
 
-def parse_meta(meta_element: Element, error_callback: Callable) -> Dict[str, str]:
+def parse_metadata(meta_element: Element, error_callback: Callable) -> Dict[str, str]:
     task_template_metadata = {}
     for element in meta_element:
         if element.tag == "title":

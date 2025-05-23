@@ -4,7 +4,7 @@ from ...constants import *
 from .metadata import *
 
 
-def action(selector: str) -> Callable:
+def action(selector: str, auto_next: bool = True) -> Callable:
     """
     This Action decorator
     Parameters:
@@ -19,9 +19,7 @@ def action(selector: str) -> Callable:
             raise Exception("Duplicated Action decorator")
         setattr(cls, DECORATOR_WATERMARKS, watermarks)
         setattr(cls, ACTION_DECORATOR_SELECTOR_KEY, selector)
+        setattr(cls, ACTION_DECORATOR_AUTO_NEXT_KEY, auto_next)
         return cls
 
     return decorator
-
-
-

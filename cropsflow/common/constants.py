@@ -29,6 +29,7 @@ GROUP_DECORATOR_ROUTE_KEY = "_GROUP_DECORATOR_ROUTE_"
 # Action DECORATOR Keys
 ACTION_DECORATOR_SELECTOR_KEY = "_action_selector_"
 ACTION_DECORATOR_PROVIDERS_KEY = "_action_providers_"
+ACTION_DECORATOR_AUTO_NEXT_KEY = '_action_auto_next_'
 
 # DataPipe DECORATOR Keys
 DATAPIPE_DECORATOR_SELECTOR_KEY = "_datapipe_selector_"
@@ -48,3 +49,10 @@ INJECT_FN_DEPENDENCY_KEY = "__inject_method_dependencies__"
 # Resource Paths
 RESOURCES_PATH_PROVIDER_TOKEN = "_resources_path_provider_token_"
 DEFAULT_RESOURCES_PATH = "_/default/resources/path_"
+
+# Playbook syntax keys
+PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY = 'accumulator'
+PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY = 'accumulator-accessor'
+PLAYBOOK_IS_ASYNC_OPTION_KEY = 'async'
+PLAYBOOK_IS_SKIPPABLE_OPTION_KEY = 'skippable'
+PLAYBOOK_NODE_ID_OPTION_KEY = 'id'

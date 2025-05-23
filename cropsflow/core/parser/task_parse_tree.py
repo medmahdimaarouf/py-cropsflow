@@ -10,19 +10,20 @@ class TaskPlaybookParseNode:
     line: int = field(default_factory=int)
 
 
+TaskMetaDataParseNode = Dict[str, str]
 TaskPlaybookParseTree = List[TaskPlaybookParseNode]
+TaskInputSchemaParseTree = Dict[str, str]
 
 
 @dataclass
 class TaskParseTree:
-    meta_data: Dict = field(default_factory=dict)
-    playbook: TaskPlaybookParseTree = None
-    dataset: str = field(default_factory=str)
-    bucket: str = field(default_factory=str)
+    playbook: TaskPlaybookParseTree = field(default_factory=list)
+    metadata: Dict[str, str] = field(default_factory=dict)
+    input_schema: None = None
 
     def __init__(self, meta_data: Dict[str, str], playbook: TaskPlaybookParseTree, dataset: str = None,
                  bucket: str = None):
-        self.meta_data = meta_data
+        self.metadata = meta_data
         self.playbook = playbook
         self.dataset = dataset
         self.bucket = bucket

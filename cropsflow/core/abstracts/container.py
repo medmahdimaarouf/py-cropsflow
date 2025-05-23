@@ -4,7 +4,7 @@ from typing import Generic, Dict, TypeVar, Union
 
 from cropsflow.common.decorators import DecoratorMetaData
 from cropsflow.common.utils import InjectionToken
-from .base_injector import BaseInjector
+from .injector import BaseInjector
 
 T = TypeVar('T')
 

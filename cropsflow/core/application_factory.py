@@ -4,9 +4,9 @@ from cropsflow.common.abstracts import Init
 from cropsflow.common.decorators import InjectionScope
 from .abstracts import ResolveStatus
 from .application import Application
-from cropsflow.core.builder.task_builder import build_task
 from .scanner.dependency_scanner import DependenciesScanner
 from .exceptions.builder import TaskBuildException
+from .engine import TaskTemplateBuilder
 
 
 def load_dependencies(app: Application):
@@ -37,11 +37,14 @@ def build_tasks(app: Application):
     def errorCallback(e: TaskBuildException):
         nonlocal has_errors
         has_errors = True
-        print(e.message)
+        if isinstance(e, TaskBuildException):
+            print(e.message)
+        else:
+            print(str(e))
 
     for token, task in app.tasks.items():
         print(f"building task '{task.metadata.target.__name__}' ...")
-        build_task(task=task, error_callback=errorCallback)
+        TaskTemplateBuilder(task=task).build(error_callback=errorCallback)
         if has_errors is not True:
             print(f"build task '{task.metadata.target.__name__}' completed successfully")
         else:
