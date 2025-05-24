@@ -7,10 +7,10 @@ from enum import Enum
 from typing import Dict, List, TypeVar, Generic, Callable, Optional, cast
 
 from cropsflow.common import TaskContext, DecoratorMetaDataType, ActionDecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe, DataModel
-from ..injector import Container
-from ..utils import BehaviorSubject
 from cropsflow.common.constants import PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, PLAYBOOK_IS_ASYNC_OPTION_KEY, \
     PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
+from ..injector import Container
+from ..utils import BehaviorSubject
 
 I = TypeVar('I')
 PLAYBOOK_NODES_CORE_OPTIONS_KEYS = [
@@ -145,16 +145,22 @@ class ActionRunner(Runner[Action]):
         async def next_callback(ctx: TaskContext) -> None:
             await self.run_queue(context=ctx)
 
-        print(f"running action {self.node.container.get_name()} ...")
-        self.init(context=context)
-        is_auto_next: bool = cast(ActionDecoratorMetaData, self.node.container.metadata).auto_next
-        if not is_auto_next:
-            self.instance.next_callback: Callable[[TaskContext], None] = next_callback
-        next_context = await self.instance.run(context=copy(context), options=self.node.options)
-        if is_auto_next:
-            await self.run_queue(context=next_context)
-        print(f"completed action {self.node.container.get_name()}")
-        self.destroy()
+        try:
+            print(f"running action {self.node.container.get_name()} ...")
+            self.init(context=context)
+            is_auto_next: bool = cast(ActionDecoratorMetaData, self.node.container.metadata).auto_next
+
+            self.instance.next_callback: Callable[[TaskContext], None] = next_callback if not is_auto_next else None
+            next_context = await self.instance.run(context=copy(context), options=self.node.options)
+            if is_auto_next:
+                await self.run_queue(context=next_context)
+            print(f"completed action {self.node.container.get_name()}")
+            self.destroy()
+        except Exception as e:
+            if not self.node.shippable:
+                raise e
+            else:
+                print(f'Action {self.node.container.get_name()} error occured (line {self.node.file_line}):\n {e} ')
 
 
 class PipeRunner(Runner[Pipe]):
@@ -175,13 +181,19 @@ class PipeRunner(Runner[Pipe]):
         return None
 
     async def run(self, context: TaskContext) -> None:
-        print(f"running pipe {self.node.container.get_name()} ...")
-        self.init(context=context)
-        await self.run_queue(context=context)
-        if self.accumulator_pipe:
-            self.accumulator_pipe.accumulate(data=self.instance.data, accessor=self.node.accumulator_accessor)
-        self.destroy()
-        print(f"completed pipe {self.node.container.get_name()}")
+        try:
+            print(f"running pipe {self.node.container.get_name()} ...")
+            self.init(context=context)
+            await self.run_queue(context=context)
+            if self.accumulator_pipe:
+                self.accumulator_pipe.accumulate(data=self.instance.data, accessor=self.node.accumulator_accessor)
+            self.destroy()
+            print(f"completed pipe {self.node.container.get_name()}")
+        except Exception as e:
+            if not self.node.shippable:
+                raise e
+            else:
+                print(f'Pipe {self.node.container.get_name()} error occured (line {self.node.file_line}):\n {e} ')
 
     def accumulate(self, data: DataModel, accessor: str = None):
         self.instance.accumulate(context=self.context, data=data, accessor=accessor, options=self.node.options)
@@ -190,6 +202,9 @@ class PipeRunner(Runner[Pipe]):
 class PlayBookRunner(Runner[object]):
 
     async def run(self, context: TaskContext) -> None:
-        self.init()
-        await self.run_queue(context=context)
-        self.destroy()
+        try:
+            self.init()
+            await self.run_queue(context=context)
+            self.destroy()
+        except Exception as e:
+            print(f'Error occurred in task {e}')

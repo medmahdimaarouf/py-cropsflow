@@ -11,7 +11,10 @@ setup(
     author_email="info@cropsflow.com",
     url="https://github.com/cropsflow/cropsflow",  # Your project URL
     packages=find_packages(include=["cropsflow", "cropsflow.*"]),
-    install_requires=['lxml'],
+    install_requires=[
+        'lxml',
+        'fastapi'
+    ],
     extras_require={
         "dev": [
             "pytest",

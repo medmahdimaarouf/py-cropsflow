@@ -115,3 +115,9 @@ class Injector(Generic[T], BaseInjector[T]):
                 raise CircularDependenciesException(stringify_injection_token(cls), self.container.name)
             else:
                 raise e
+
+    def get_root(self) -> 'Injector':
+        injector: Injector = self
+        while injector.container.host is not None:
+            injector = injector.container.host.injector
+        return injector

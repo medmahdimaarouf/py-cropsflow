@@ -16,7 +16,7 @@ T = TypeVar('T')
 class Container(Generic[T], BaseContainer[T]):
     def __init__(self, metadata: DecoratorMetaData, instance: T = None, host: BaseContainer = None):
         super().__init__(metadata=metadata, instance=instance, host=host)
-        self.injector = Injector(self, instance=instance)  # Initialize the injector
+        self.injector = Injector(container=self, instance=instance)
         self.register_core_provider(token=Injector, instance=self.injector)
 
     def get_name(self):

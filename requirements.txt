@@ -1,2 +1,6 @@
 lxml~=5.3.0
+fastapi~=0.115.12
+pydantic~=2.11.5
 setuptools~=70.0.0
+pip~=24.0
+cropsflow~=0.1.0

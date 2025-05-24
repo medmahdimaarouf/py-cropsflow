@@ -6,4 +6,5 @@ from .pipe import *
 from .hooks import *
 from .iterable_datamodel import *
 from .logger import *
+from .metric import *
 from .task_context import *

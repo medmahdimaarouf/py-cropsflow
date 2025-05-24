@@ -3,7 +3,7 @@ from typing import Union
 
 from cropsflow.common.decorators import DynamicModule, ProviderMetaData, ModuleDef
 from cropsflow.common.utils import stringify_injection_token, InjectionToken
-from ..application import Application
+from cropsflow.application import Application
 from ..injector.module import Module
 from ..scanner.dependency_wrapper import DependencyWrap
 from ..scanner.metadata_scanner import *
@@ -17,10 +17,10 @@ class DependenciesScanner:
     def __init__(self, app: Application):
         self.app = app
 
-    def scan(self, dep: Union[ModuleDef, Type[Any]]):
+    def scan_dependencies(self, dep: Union[ModuleDef, Type[Any]]):
         self.scan_module(dep)
-        self.scan_dependencies()
-        self.bind_dependencies()
+        self.scan_edges()
+        self.bind_edges()
 
     def scan_module(self, module_def: ModuleDef) -> DependencyWrap:
         if is_function(module_def):
@@ -43,7 +43,7 @@ class DependenciesScanner:
                 wrap.dep.add_import(token=import_wrapper.token, module=import_wrapper.dep)
         return wrap
 
-    def scan_dependencies(self):
+    def scan_edges(self):
         for module in self.get_modules():
             metadata: ModuleDecoratorMetaData = module.metadata
             for index, provider in enumerate(metadata.providers):
@@ -78,7 +78,7 @@ class DependenciesScanner:
                     raise ValueError(
                         f'Unknown declaration {dec.__name__} in @Module {module.metadata.target.__name__}')
 
-    def bind_dependencies(self):
+    def bind_edges(self):
         if len(self.app.modules):
             self._expose_module(next(iter(self.app.modules.values())))
 

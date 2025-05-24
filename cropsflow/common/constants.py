@@ -10,7 +10,9 @@ ACTION_WATERMARK = "__action__"
 TASK_WATERMARK = "__task__"
 MODULE_WATERMARK = "__module__"
 GROUP_WATERMARK = '__group__'
-
+DECLARATIONS_WATERMARK = '__declaration__'
+# Declaration annotation keys
+DECLARATIONS_ANNOTATION_KEY = '_declarations_'
 # Injectable DECORATOR Providers
 INJECTABLE_DECORATOR_INJECTION_SCOPE_KEY = "_injectable_decorator_scope_"
 

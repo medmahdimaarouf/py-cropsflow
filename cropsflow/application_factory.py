@@ -2,11 +2,12 @@ from typing import Type, Any
 
 from cropsflow.common.abstracts import Init
 from cropsflow.common.decorators import InjectionScope
-from .abstracts import ResolveStatus
+from cropsflow.core.abstracts import ResolveStatus
 from .application import Application
-from .scanner.dependency_scanner import DependenciesScanner
-from .exceptions.builder import TaskBuildException
-from .engine import TaskTemplateBuilder
+from .application_options import ApplicationOptions
+from cropsflow.core.scanner.dependency_scanner import DependenciesScanner
+from cropsflow.core.exceptions.builder import TaskBuildException
+from cropsflow.core.engine import TaskTemplateBuilder
 
 
 def load_dependencies(app: Application):
@@ -56,13 +57,13 @@ def build_tasks(app: Application):
 
 class ApplicationFactory:
 
-    async def init(self, t: Type[Any], debug: bool = False) -> Application:
+    async def init(self, t: Type[Any], options: ApplicationOptions = None, args: list[str] = []) -> Application:
         try:
-            application: Application = Application()
+            application: Application = Application(args)
             scanner = DependenciesScanner(app=application)
             print("Initializing ...")
             print("scanning dependencies ...")
-            scanner.scan(t)
+            scanner.scan_dependencies(t)
             print('Modules initializing...')
             await initialize_modules(application)
             print('Application initialized successfully')
@@ -70,12 +71,12 @@ class ApplicationFactory:
             build_tasks(application)
             return application
         except Exception as e:
-            if debug:
+            if options.debug:
                 raise e
             else:
                 print(str(e))
                 raise e
                 return None
 
-    async def start(self, t: Type[Any], debug: bool = False) -> Application:
-        return await self.init(t, debug)
+    async def start(self, t: Type[Any], options: ApplicationOptions = ApplicationOptions(), args: list[str] = []) -> Application:
+        return await self.init(t, options=options, args=args)
