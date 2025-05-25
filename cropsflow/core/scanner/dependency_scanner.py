@@ -3,7 +3,7 @@ from typing import Union
 
 from cropsflow.common.decorators import DynamicModule, ProviderMetaData, ModuleDef
 from cropsflow.common.utils import stringify_injection_token, InjectionToken
-from cropsflow.application import Application
+from cropsflow.platforms.application import Application
 from ..injector.module import Module
 from ..scanner.dependency_wrapper import DependencyWrap
 from ..scanner.metadata_scanner import *

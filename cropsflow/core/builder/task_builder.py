@@ -4,13 +4,13 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, Callable, List
 
 from cropsflow.common.decorators import Option
-from .runner import RunnerNode, PLAYBOOK_NODES_CORE_OPTIONS_KEYS
-from ..abstracts import Builder
-from ..exceptions.builder import *
-from ..injector import Container, Task
-from ..parser import TaskPlaybookParseNode, parse_task_template, TaskParseTree
-from ..scanner.metadata_scanner import scan_class_options
-from ..utils import parse_value
+from .playbook import PlaybookNode, PLAYBOOK_NODES_CORE_OPTIONS_KEYS
+from cropsflow.core.abstracts import Builder
+from cropsflow.core.exceptions.builder import *
+from cropsflow.core.injector import Container, Task
+from cropsflow.core.parser import TaskPlaybookParseNode, parse_task_template, TaskParseTree
+from cropsflow.core.scanner.metadata_scanner import scan_class_options
+from cropsflow.core.utils import parse_value
 
 
 @dataclass
@@ -32,7 +32,7 @@ class TaskTemplate:
     template_file_path: str = field(default=str)
     metadata: TaskTemplateMetaData = field(default_factory=TaskTemplateMetaData)
     input_schema: TaskTemplateInputSchema = field(default_factory=TaskTemplateInputSchema)
-    playbook: RunnerNode = None
+    playbook: PlaybookNode = None
 
 
 class TaskTemplateBuilder(Builder[TaskTemplate]):
@@ -63,14 +63,14 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
     def build_input_schema(self, error_callback: Callable[[Exception], None]) -> TaskTemplateInputSchema:
         return TaskTemplateInputSchema()
 
-    def __build_template_playbook(self, error_callback: Callable[[Exception], None]) -> RunnerNode:
-        runner_node: RunnerNode = RunnerNode(container=self.task)
+    def __build_template_playbook(self, error_callback: Callable[[Exception], None]) -> PlaybookNode:
+        runner_node: PlaybookNode = PlaybookNode(container=self.task)
         for parse_node in self.parse_tree.playbook:
             self.__build_playbook_node(parse_node=parse_node, error_handler=error_callback, parent=runner_node)
         return runner_node
 
     def __build_playbook_node(self, parse_node: TaskPlaybookParseNode, error_handler: Callable[[Exception], None],
-                              parent: RunnerNode) -> None:
+                              parent: PlaybookNode) -> None:
         # initialize runner container
         action_or_pipe: Container = self.task.get_action(selector=parse_node.selector) or self.task.get_pipe(selector=parse_node.selector)
         if action_or_pipe is None:
@@ -98,7 +98,7 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
             else:
                 options.setdefault(key.strip(), action_or_pipe_option.default)
         # append the node to parent
-        node: RunnerNode = parent.append(container=action_or_pipe, options=options)
+        node: PlaybookNode = parent.append(container=action_or_pipe, options=options)
         # assign file line from parse node to track template code
         node.file_line = parse_node.line
         # build its children

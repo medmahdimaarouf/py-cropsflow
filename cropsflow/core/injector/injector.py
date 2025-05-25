@@ -123,3 +123,7 @@ class Injector(Generic[T], BaseInjector[T]):
         while injector.container.host is not None:
             injector = injector.container.host.injector
         return injector
+
+    def resolve_dependencies(self):
+        for dep in self.container.deps.values():
+            dep.injector.resolve(scope=InjectionScope.DEFAULT)

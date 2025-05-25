@@ -11,8 +11,8 @@ from .response import HttpErrorResponse, SuccessResponse
 class Router(APIRouter):
 
     @inject(arg_name='prefix', optional=True)
-    def __init__(self, prefix: str = '/'):
-        super().__init__(prefix=prefix)
+    def __init__(self, prefix: str = ''):
+        super().__init__(prefix=prefix or '')
 
     def use(self, path: str, router: 'Router'):
         if path.strip() in self.routes:

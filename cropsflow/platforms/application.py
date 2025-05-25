@@ -1,13 +1,12 @@
-from typing import Any, Type, Dict, List
+from typing import Any, Type, Dict
 
 from cropsflow.common.decorators import InjectionScope, service
 from cropsflow.common.services import Monitor
 from cropsflow.common.utils import InjectionToken
-from cropsflow.core.engine import Engine
-from cropsflow.core.injector import Container, Injector, NULL_INJECTOR
+from cropsflow.orchestrator import Orchestrator
+from cropsflow.core.injector import Container, Injector
 from cropsflow.core.injector.module import Module
 from cropsflow.core.scanner.metadata_scanner import scanServiceMetaData
-from cropsflow.events import EventEmitter
 
 
 @service(scope=InjectionScope.DEFAULT)
@@ -21,10 +20,10 @@ class Application(Container):
     def __init__(self, args: list[str] = []):
         super().__init__(metadata=scanServiceMetaData(Application), instance=self, host=None)
         self.args = args
-        self.register_core_provider(token=Engine, instance=Engine(self))
+        self.register_core_provider(token=Orchestrator, instance=Orchestrator(self))
 
-    def get_engine(self) -> Engine | None:
-        injector: Injector = self.get(token=Engine)
+    def get_orchestrator(self) -> Orchestrator | None:
+        injector: Injector = self.get(token=Orchestrator)
         return injector.resolve(scope=InjectionScope.DEFAULT, optional=True)
 
     def get_monitor(self) -> Monitor | None:

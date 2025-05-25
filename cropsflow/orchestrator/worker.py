@@ -1,18 +1,19 @@
 import asyncio
+
 import threading
 import uuid
-
 from cropsflow.common.abstracts import TaskContext
 from .runner import PlayBookRunner
+from .worker_monitor import WorkerMonitor
 
 
-class TaskWorker(threading.Thread):
+class Worker(threading.Thread):
     id: str
-    runner: PlayBookRunner
+    monitor: WorkerMonitor = WorkerMonitor()
 
     def __init__(self, runner: PlayBookRunner, daemon: bool = False):
         self.id = str(uuid.uuid4())
-        self.runner = runner
+        self.__runner = runner
 
         def target():
             self._loop = asyncio.new_event_loop()
@@ -24,12 +25,12 @@ class TaskWorker(threading.Thread):
             finally:
                 self._loop.close()
 
-        super(TaskWorker, self).__init__(target=target, daemon=daemon)
+        super(Worker, self).__init__(target=target, daemon=daemon)
 
     async def start_async(self):
         context: TaskContext = TaskContext()
         print(f'Running task {self.id} ...')
-        await self.runner.run(context=context)
+        await self.__runner.run(context=context)
         print(f"TaskWorker {self.id} completed.")
 
     def stop(self):

@@ -4,21 +4,13 @@ from asyncio import sleep
 from collections import deque
 from copy import copy
 from enum import Enum
-from typing import Dict, List, TypeVar, Generic, Callable, Optional, cast
+from typing import List, TypeVar, Generic, Callable, Optional, cast
 
-from cropsflow.common import TaskContext, DecoratorMetaDataType, ActionDecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe, DataModel
-from cropsflow.common.constants import PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, PLAYBOOK_IS_ASYNC_OPTION_KEY, \
-    PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
-from ..injector import Container
-from ..utils import BehaviorSubject
+from cropsflow.common import TaskContext, ActionDecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe, DataModel
+from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
+from cropsflow.core.utils import BehaviorSubject
 
 I = TypeVar('I')
-PLAYBOOK_NODES_CORE_OPTIONS_KEYS = [
-    PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY,
-    PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY,
-    PLAYBOOK_IS_ASYNC_OPTION_KEY,
-    PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
-]
 
 
 class ERunnerStatus(Enum):
@@ -28,62 +20,9 @@ class ERunnerStatus(Enum):
     COMPLETED = 'COMPLETED'
 
 
-class ERunnerNodeType(Enum):
-    ROOT = 'ROOT',
-    ACTION = 'ACTION',
-    PIPE = 'PIPE'
-
-
-class RunnerNode:
-    parent: 'RunnerNode' = None
-    container: Container
-    options: Dict[str, any]
-    type: ERunnerNodeType
-    children: List['RunnerNode'] = []
-    file_line: int = 0
-
-    @property
-    def shippable(self) -> bool:
-        return self.options.get(PLAYBOOK_IS_SKIPPABLE_OPTION_KEY, None) is True
-
-    @property
-    def is_async(self) -> bool:
-        return self.options.get(PLAYBOOK_IS_ASYNC_OPTION_KEY, None) is True
-
-    @property
-    def accumulator_id(self) -> str | None:
-        return self.options.get(PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, None)
-
-    @property
-    def accumulator_accessor(self) -> str | None:
-        return self.options.get(PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, None)
-
-    def __init__(self, container: Container, options: Dict[str, any] = {}, parent: 'RunnerNode' = None):
-        self.container = container
-        self.options = options
-
-        if self.container.metadata.type == DecoratorMetaDataType.ACTION:
-            self.type = ERunnerNodeType.ACTION
-        elif self.container.metadata.type == DecoratorMetaDataType.DATAPIPE:
-            self.type = ERunnerNodeType.PIPE
-        elif self.container.metadata.type == DecoratorMetaDataType.TASK:
-            self.type = ERunnerNodeType.ROOT
-        else:
-            raise Exception(f'RunnerQueueException: {self.container.get_name()} is not a runnable dependency')
-
-    def append(self, container: Container, options: Dict[str, any] = {}) -> 'RunnerNode':
-        node: RunnerNode = RunnerNode(container=container, options=options, parent=self)
-        self.children.append(node)
-        return node
-
-    def remove(self, container: Container) -> 'RunnerNode':
-        self.children = [child for child in self.children if child.container.id != container.id]
-        return self
-
-
 class Runner(Generic[I], ABC):
     parent: 'Runner' = None
-    node: RunnerNode
+    node: PlaybookNode
     async_runners: List["Runner"] = []
     sync_runners: deque["Runner"] = deque()
     status: BehaviorSubject[ERunnerStatus] = BehaviorSubject(ERunnerStatus.READY)
@@ -91,7 +30,7 @@ class Runner(Generic[I], ABC):
     context: TaskContext = None
     stopped: bool = False
 
-    def __init__(self, node: RunnerNode, parent: 'Runner' = None):
+    def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
         self.node = node
         self.parent = parent
 
@@ -128,9 +67,9 @@ class Runner(Generic[I], ABC):
         if isinstance(self.instance, Init):
             self.instance.init(args)
         for child_node in self.node.children:
-            if child_node.type == ERunnerNodeType.ACTION:
+            if child_node.type == EPlaybookNodeType.ACTION:
                 self.sync_runners.append(ActionRunner(node=child_node, parent=self))
-            if child_node.type == ERunnerNodeType.PIPE:
+            if child_node.type == EPlaybookNodeType.PIPE:
                 self.sync_runners.append(PipeRunner(node=child_node, parent=self))
         gc.collect()
 
@@ -166,7 +105,7 @@ class ActionRunner(Runner[Action]):
 class PipeRunner(Runner[Pipe]):
     accumulator_pipe: 'PipeRunner' = None
 
-    def __init__(self, node: RunnerNode, parent: 'Runner' = None):
+    def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
         super().__init__(node=node, parent=parent)
         self.accumulator_pipe = self.find_parent_pipe(id=self.node.accumulator_id)
         if self.node.accumulator_id and not self.accumulator_pipe:

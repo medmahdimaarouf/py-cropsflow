@@ -51,4 +51,4 @@ class EventsModule(Init):
             def get_channel_events(channel_id: str):
                 return Router.success(data=event_emitter.get_channel(channel_id=channel_id).events())
 
-            router.include_router(router=router)
+            router.include_router(router=events_router)

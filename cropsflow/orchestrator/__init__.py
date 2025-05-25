@@ -1,42 +1,45 @@
-from typing import Type, Dict, Union
+from typing import Type, Union
 
-from .runner import PlayBookRunner
-from .task_builder import TaskTemplateBuilder
-from .task_worker import TaskWorker
-from .workers_queue import WorkersQueue
-from .workers_schedular import WorkersSchedular
-from ..injector import Container
+from cropsflow.common.decorators import service
+from cropsflow.core.builder import *
+from .runner import *
+from .worker import *
+from .worker_factory import *
+from .workers_pool import *
+from .workers_queue import *
+from .workers_scheduler import *
 
 
-class Engine:
+@service(scope=InjectionScope.DEFAULT)
+class Orchestrator:
     container: Container
-    workers: Dict[str, TaskWorker]
+    workers: Dict[str, Worker]
     queue: WorkersQueue = WorkersQueue()
-    schedular: WorkersSchedular = WorkersSchedular()
+    scheduler: WorkersScheduler = WorkersScheduler()
 
     def __init__(self, container: Container):
         self.container = container
         self.workers = {}
 
-    def create_worker(self, meta_type: Type) -> TaskWorker:
+    def create_worker(self, meta_type: Type) -> Worker:
         task: Container = self.container.get_task(meta_type)
         if task is None:
             raise Exception(f'Unknown task class {meta_type.__name__}')
         template = TaskTemplateBuilder(task=task).build()
-        worker = TaskWorker(runner=PlayBookRunner(node=template.playbook))
+        worker = Worker(runner=PlayBookRunner(node=template.playbook))
         self.workers[worker.id] = worker
         return worker
 
-    def get_worker(self, worker_id: str) -> Union[TaskWorker, None]:
+    def get_worker(self, worker_id: str) -> Union[Worker, None]:
         return self.workers.get(worker_id, None)
 
     def start_worker(self, worker_id: str) -> None:
-        worker: TaskWorker = self.workers.get(worker_id, None);
+        worker: Worker = self.workers.get(worker_id, None);
         if worker is not None:
             worker.run()
 
     def terminate_worker(self, worker_id: str) -> None:
-        worker: TaskWorker = self.workers.get(worker_id, None);
+        worker: Worker = self.workers.get(worker_id, None);
         if worker is not None:
             worker.stop()
         self.workers.pop(worker_id, None)

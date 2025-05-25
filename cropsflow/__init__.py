@@ -3,3 +3,4 @@ from .core import *
 from .events import *
 from .monitoring import *
 from .router import *
+from .platforms import *
