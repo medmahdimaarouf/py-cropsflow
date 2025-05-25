@@ -58,7 +58,7 @@ class DynamicModule:
     module: Type[Any] = field(default_factory=Type)
     is_global: bool = field(default_factory=bool)
 
-    def __init__(self, module: Type[Any], providers: List[ProviderDef], is_global: bool):
+    def __init__(self, module: Type[Any], providers: List[ProviderDef], is_global: bool = False):
         self.module = module
         self.providers = providers
         self.is_global = is_global

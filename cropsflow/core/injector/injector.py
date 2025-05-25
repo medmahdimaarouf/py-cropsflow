@@ -46,6 +46,8 @@ class Injector(Generic[T], BaseInjector[T]):
                 if optional:
                     return None
                 else:
+                    print(inspect.getfile(self.container.metadata.target))
+                    print(f"NULL_INJECTOR found for token '{token}' requested by {self.container.metadata.target}")
                     return injector.resolve(token)
             else:
                 return injector.resolve(scope=scope, optional=optional)

@@ -17,7 +17,8 @@ def provider_function(v: int) -> str:
     providers=[
         ValueProviderMetaData(provide="p1", use_value=1),
         FactoryProviderMetaData(provide='provider_function', use_factory=provider_function)
-    ]
+    ],
+    exports=['p1']
 )
 class AppModule(Init):
     @inject(arg_name="i1", token="p1")
@@ -26,5 +27,3 @@ class AppModule(Init):
 
     def __init__(self):
         pass
-
-

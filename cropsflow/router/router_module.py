@@ -1,11 +1,10 @@
-from cropsflow.common import module, Init, DynamicModule
+from cropsflow.common.decorators import module
 from .router import Router
-from .. import inject, Injector
 
 
 @module(
     providers=[Router],
-    exports=[Router]
+    exports=[Router],
 )
 class RouterModule:
     pass

@@ -1,13 +1,17 @@
-from fastapi import APIRouter
 from http import HTTPStatus
-from cropsflow import service
+
+from fastapi import APIRouter
+
+from cropsflow.common import InjectionScope
+from cropsflow.common import service, inject
 from .response import HttpErrorResponse, SuccessResponse
 
 
-@service()
+@service(scope=InjectionScope.DEFAULT)
 class Router(APIRouter):
 
-    def __init__(self, prefix: str):
+    @inject(arg_name='prefix', optional=True)
+    def __init__(self, prefix: str = '/'):
         super().__init__(prefix=prefix)
 
     def use(self, path: str, router: 'Router'):

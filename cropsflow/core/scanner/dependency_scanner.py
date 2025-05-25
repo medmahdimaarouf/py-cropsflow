@@ -17,22 +17,21 @@ class DependenciesScanner:
     def __init__(self, app: Application):
         self.app = app
 
-    def scan_dependencies(self, dep: Union[ModuleDef, Type[Any]]):
-        self.scan_module(dep)
-        self.scan_edges()
-        self.bind_edges()
+    def scan_modules(self, dep: Union[ModuleDef, Type[Any]], overrides: list[Union[ModuleDef, Type[Any]]] = []):
+        for override in overrides:
+            self.scan_module(module_def=override, is_global=True)
+        self.scan_module(module_def=dep, is_global=True)
 
-    def scan_module(self, module_def: ModuleDef) -> DependencyWrap:
+    def scan_module(self, module_def: ModuleDef, is_global: bool = False) -> DependencyWrap:
         if is_function(module_def):
             module_def = module_def()
         wrap: DependencyWrap[Module] = None
         if isinstance(module_def, DynamicModule):
-            wrap = self.register_module(scanModuleMetaData(module_def.module), dynamic=True,
-                                        is_global=module_def.is_global)
+            wrap = self.register_module(module_metadata=scanModuleMetaData(module_def.module), dynamic=True, is_global=is_global or module_def.is_global)
             for provider in module_def.providers if module_def.providers is not None else []:
                 wrap.dep.register(token=provider.provide, dep=provider)
         else:
-            wrap = self.register_module(scanModuleMetaData(module_def))
+            wrap = self.register_module(module_metadata=scanModuleMetaData(module_def), dynamic=False, is_global=is_global)
         if wrap.inserted:
             module_metadata: ModuleDecoratorMetaData = wrap.dep.metadata
             for import_def in module_metadata.imports:
@@ -44,7 +43,7 @@ class DependenciesScanner:
         return wrap
 
     def scan_edges(self):
-        for module in self.get_modules():
+        for module in self.app.modules.values():
             metadata: ModuleDecoratorMetaData = module.metadata
             for index, provider in enumerate(metadata.providers):
                 if provider is None:
@@ -79,8 +78,9 @@ class DependenciesScanner:
                         f'Unknown declaration {dec.__name__} in @Module {module.metadata.target.__name__}')
 
     def bind_edges(self):
-        if len(self.app.modules):
-            self._expose_module(next(iter(self.app.modules.values())))
+        for module in self.app.modules.values():
+            if not module.exposed:
+                self._expose_module(module=module)
 
     def _expose_module(self, module: Module):
         if len(module.imports.values()):
@@ -97,11 +97,11 @@ class DependenciesScanner:
                     for [token, dep] in exported_module.deps.items():
                         module.exports.setdefault(token, dep)
                         if module.is_global:
-                            self.container.register(token, dep)
+                            self.app.register(token, dep)
                 elif module.deps.get(token) is not None:
                     module.exports.setdefault(token, module.deps.get(token))
                     if module.is_global:
-                        self.container.register(token, module.deps.get(token))
+                        self.app.register(token, module.deps.get(token))
                 else:
                     raise Exception(
                         f'Could not export {stringify_injection_token(token)} from {module.get_name()} : dependency not found.')

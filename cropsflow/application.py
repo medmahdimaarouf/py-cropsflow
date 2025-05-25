@@ -15,23 +15,21 @@ class Application(Container):
     modules: Dict[InjectionToken, Module] = {}
     tasks: Dict[InjectionToken, Any] = {}
     groups: Dict[InjectionToken, Any] = {}
-    global_modules: List[Module] = []
+    global_modules: Dict[InjectionToken, Module] = {}
     args: list[str] = []
 
     def __init__(self, args: list[str] = []):
         super().__init__(metadata=scanServiceMetaData(Application), instance=self, host=None)
         self.args = args
         self.register_core_provider(token=Engine, instance=Engine(self))
-        self.register_core_provider(token=Monitor, instance=Monitor())
-        self.register_core_provider(token=EventEmitter, instance=EventEmitter())
 
     def get_engine(self) -> Engine | None:
         injector: Injector = self.get(token=Engine)
-        return None if injector is NULL_INJECTOR else injector.resolve(scope=InjectionScope.DEFAULT, optional=True)
+        return injector.resolve(scope=InjectionScope.DEFAULT, optional=True)
 
     def get_monitor(self) -> Monitor | None:
         injector: Injector = self.get(token=Monitor)
-        return None if injector is NULL_INJECTOR else injector.resolve(scope=InjectionScope.DEFAULT, optional=True)
+        return injector.resolve(scope=InjectionScope.DEFAULT, optional=True)
 
     def module(self, meta_type: Type[Any]) -> Container:
         return self.modules.get(meta_type)
