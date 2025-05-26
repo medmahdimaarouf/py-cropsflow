@@ -6,7 +6,17 @@ from .dataset import DataSet
 D = TypeVar('D', bound=DataSet)
 
 
-class DataSetAdapter(Generic[D], ABC):
+class DataSource(Generic[D], ABC):
+    connected: bool = False
+
+    @abstractmethod
+    async def connect(self, **args) -> None:
+        pass
+
+    @abstractmethod
+    async def disconnect(self, **args) -> None:
+        pass
+
     @abstractmethod
     async def get_dataset(self, name: str) -> Union[D, None]:
         pass

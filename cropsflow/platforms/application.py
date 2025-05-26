@@ -1,9 +1,7 @@
 from typing import Any, Type, Dict
 
 from cropsflow.common.decorators import InjectionScope, service
-from cropsflow.common.services import Monitor
 from cropsflow.common.utils import InjectionToken
-from cropsflow.orchestrator import Orchestrator
 from cropsflow.core.injector import Container, Injector
 from cropsflow.core.injector.module import Module
 from cropsflow.core.scanner.metadata_scanner import scanServiceMetaData
@@ -19,16 +17,20 @@ class Application(Container):
 
     def __init__(self, args: list[str] = []):
         super().__init__(metadata=scanServiceMetaData(Application), instance=self, host=None)
+        self.register_core_provider(token=Application, instance=self)
         self.args = args
-        self.register_core_provider(token=Orchestrator, instance=Orchestrator(self))
 
-    def get_orchestrator(self) -> Orchestrator | None:
-        injector: Injector = self.get(token=Orchestrator)
-        return injector.resolve(scope=InjectionScope.DEFAULT, optional=True)
+    def get_orchestrator(self) -> 'Orchestrator':
+        from cropsflow.orchestrator.orchestrator import Orchestrator
+        return self.get(token=Orchestrator).resolve[Orchestrator](scope=InjectionScope.DEFAULT, optional=True)
 
-    def get_monitor(self) -> Monitor | None:
-        injector: Injector = self.get(token=Monitor)
-        return injector.resolve(scope=InjectionScope.DEFAULT, optional=True)
+    def get_monitor(self):
+        from cropsflow.monitoring import Monitor
+        return self.get(token=Monitor).resolve[Monitor](scope=InjectionScope.DEFAULT, optional=True)
+
+    def get_data_sources(self):
+        from cropsflow.data import DataSourcesRegister
+        return self.get(token=DataSourcesRegister).resolve[DataSourcesRegister](scope=InjectionScope.DEFAULT, optional=True)
 
     def module(self, meta_type: Type[Any]) -> Container:
         return self.modules.get(meta_type)

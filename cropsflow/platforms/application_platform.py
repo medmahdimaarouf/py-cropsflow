@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Type, Any, Union
 
 from cropsflow.common import Init, InjectionScope, ModuleDef
-from cropsflow.orchestrator import TaskTemplateBuilder
+from cropsflow.core.builder import TaskTemplateBuilder
 from cropsflow.core.exceptions.builder import TaskBuildException
 from cropsflow.core.scanner.dependency_scanner import DependenciesScanner
 from .application import Application

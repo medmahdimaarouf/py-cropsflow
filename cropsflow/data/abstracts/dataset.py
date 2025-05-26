@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Union
 
-from .data_model import DataModel
+from cropsflow.common.abstracts.data_model import DataModel
 
 I = TypeVar('I')
 

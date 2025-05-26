@@ -1,5 +1,5 @@
 from cropsflow.router import Router
-from cropsflow.platforms import Application
+from cropsflow.platforms.application import Application
 
 
 def get_workers_pool_router(application: Application) -> Router:
@@ -8,5 +8,4 @@ def get_workers_pool_router(application: Application) -> Router:
     @router.get(path='')
     def handle_route():
         return Router.success({})
-
     return router

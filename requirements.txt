@@ -4,3 +4,5 @@ pydantic~=2.11.5
 setuptools~=70.0.0
 pip~=24.0
 cropsflow~=0.1.0
+
+uvicorn~=0.34.2

@@ -3,12 +3,13 @@ from typing import Type, Any
 
 import uvicorn
 from fastapi import FastAPI
-from starlette.routing import Router
 
+from cropsflow.data import DataModule
 from cropsflow.events import EventsModule
 from cropsflow.monitoring import MonitoringModule
-from cropsflow.platforms import ApplicationPlatform, Application, ApplicationOptions
-from cropsflow.router import Router, RouterModule
+from cropsflow.orchestrator import OrchestratorModule
+from cropsflow.platforms import ApplicationPlatform, Application
+from cropsflow.router import RouterModule
 from .platform_options import PlatformOptions
 from .routes import get_api_router
 
@@ -17,7 +18,7 @@ class GatewayApplicationPlatform(ApplicationPlatform):
     __server_thread: threading.Thread
 
     async def start(self, module: Type[Any], options: PlatformOptions = PlatformOptions(), args: list[str] = []) -> Application:
-        await self.init(module, options=options, overrides=[MonitoringModule, RouterModule, EventsModule])
+        await self.init(module, options=options, overrides=[RouterModule, OrchestratorModule, MonitoringModule, EventsModule, DataModule])
         self.__server_thread = threading.Thread(target=self.__start_server, name='CropsFlow Gateway Platform', args=[options], daemon=False)
         self.__server_thread.start()
         print(f"CropsFlow server is running on http://{'localhost'}:{8000}")
