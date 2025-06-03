@@ -6,6 +6,7 @@ from cropsflow.common import DecoratorMetaDataType, DecoratorMetaData
 from cropsflow.common.constants import PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, PLAYBOOK_IS_ASYNC_OPTION_KEY, \
     PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
 from ..injector import Container
+from ..parser import ParseNode, PlaybookParseNode
 
 PLAYBOOK_NODES_CORE_OPTIONS_KEYS = [
     PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY,
@@ -27,7 +28,7 @@ class PlaybookNode:
     options: Dict[str, any]
     type: EPlaybookNodeType
     children: List['PlaybookNode'] = []
-    file_line: int = 0
+    parse_node: PlaybookParseNode
 
     @property
     def shippable(self) -> bool:
@@ -45,21 +46,10 @@ class PlaybookNode:
     def accumulator_accessor(self) -> str | None:
         return self.options.get(PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, None)
 
-    @property
-    def container_metadata(self) -> DecoratorMetaData:
-        return self.container.metadata
-
-    @property
-    def container_class_file(self) -> str:
-        return inspect.getfile(self.container_metadata.target)
-
-    @property
-    def container_class_file(self) -> str:
-        return inspect.getfile(self.container_metadata.target)
-
-    def __init__(self, container: Container, options: Dict[str, any] = {}, parent: 'PlaybookNode' = None):
+    def __init__(self, parse_node: ParseNode, container: Container, options: Dict[str, any] = {}, parent: 'PlaybookNode' = None):
         self.container = container
         self.options = options
+        self.parse_node = parse_node
 
         if self.container.metadata.type == DecoratorMetaDataType.ACTION:
             self.type = EPlaybookNodeType.ACTION
@@ -70,8 +60,8 @@ class PlaybookNode:
         else:
             raise Exception(f'RunnerQueueException: {self.container.get_name()} is not a runnable dependency')
 
-    def append(self, container: Container, options: Dict[str, any] = {}) -> 'PlaybookNode':
-        node: PlaybookNode = PlaybookNode(container=container, options=options, parent=self)
+    def append(self, parse_node: ParseNode, container: Container, options: Dict[str, any]) -> 'PlaybookNode':
+        node: PlaybookNode = PlaybookNode(parse_node=parse_node, container=container, options=options, parent=self)
         self.children.append(node)
         return node
 

@@ -1,5 +1,6 @@
 import threading
 import time
+from abc import ABC
 from collections import defaultdict
 
 from cropsflow.common.abstracts import Metric
@@ -20,25 +21,7 @@ class Counter(Metric):
             return self._value
 
 
-class Gauge(Metric):
-    def __init__(self, name, value_func=None, description=""):
-        """
-        value_func: function returning current value dynamically
-        """
-        super().__init__(name, description)
-        self._value = 0
-        self._lock = threading.Lock()
-        self.value_func = value_func
 
-    def set(self, value):
-        with self._lock:
-            self._value = value
-
-    def collect(self):
-        if self.value_func:
-            return self.value_func()
-        with self._lock:
-            return self._value
 
 
 class Timer(Metric):

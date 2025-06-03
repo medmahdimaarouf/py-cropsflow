@@ -1,10 +1,9 @@
 from inspect import isclass
 from typing import Generic, TypeVar, Union
 
-from cropsflow.common.decorators import ProviderMetaData, ValueProviderMetaData, DataPipeDecoratorMetaData, \
+from cropsflow.common.decorators import DecoratorMetaData, TaskDecoratorMetaData, DecoratorMetaDataType
+from cropsflow.common.decorators import ProviderMetaData, DataPipeDecoratorMetaData, \
     ActionDecoratorMetaData, InjectionScope
-from ...common.decorators import TaskDecoratorMetaData
-from cropsflow.common.schemas import DecoratorMetaData
 from cropsflow.common.utils import InjectionToken, stringify_injection_token
 from .injector import Injector, NULL_INJECTOR
 from ..abstracts.container import BaseContainer
@@ -77,6 +76,13 @@ class Container(Generic[T], BaseContainer[T]):
 
     def register_core_provider(self, token: InjectionToken, instance: any):
         self.core_providers.setdefault(token, instance)
+
+    def get_tasks(self) -> list['Container']:
+        tasks = list()
+        for token, dep in self.deps.items():
+            if isinstance(dep.metadata, DecoratorMetaData) and dep.metadata.type is DecoratorMetaDataType.TASK:
+                tasks.append(dep)
+        return tasks
 
 
 '''

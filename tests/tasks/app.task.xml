@@ -10,11 +10,8 @@
     </tags>
     <readme src="./readme.md"/>
     <playbook>
-        <sleep seconds="2" ff="sdf">
-            <sleep seconds="1"/>
-            <map></map>
-            <sleep seconds="2"/>
-            <sleep seconds="3"/>
-        </sleep>
+        <raise-error>
+
+        </raise-error>
     </playbook>
 </task>

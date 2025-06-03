@@ -1,4 +1,7 @@
 import gc
+import inspect
+import sys
+import traceback
 from abc import abstractmethod, ABC
 from asyncio import sleep
 from collections import deque
@@ -6,7 +9,7 @@ from copy import copy
 from enum import Enum
 from typing import List, TypeVar, Generic, Callable, Optional, cast
 
-from cropsflow.common import TaskContext, ActionDecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe, DataModel
+from cropsflow.common import TaskContext, ActionDecoratorMetaData, DecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe, DataModel
 from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
 from cropsflow.core.utils import BehaviorSubject
 
@@ -29,6 +32,14 @@ class Runner(Generic[I], ABC):
     instance: I = None
     context: TaskContext = None
     stopped: bool = False
+
+    @property
+    def container_metadata(self) -> DecoratorMetaData:
+        return self.node.container.metadata
+
+    @property
+    def container_class_file(self) -> str:
+        return inspect.getfile(self.container_metadata.target)
 
     def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
         self.node = node
@@ -94,12 +105,17 @@ class ActionRunner(Runner[Action]):
             if is_auto_next:
                 await self.run_queue(context=next_context)
             print(f"completed action {self.node.container.get_name()}")
-            self.destroy()
         except Exception as e:
-            if not self.node.shippable:
+            if self.node.shippable:
                 raise e
             else:
-                print(f'Action {self.node.container.get_name()} error occured (line {self.node.file_line}):\n {e} ')
+                print(f'Action : {self.node.parse_node.template_file_name} error occured (line {self.node.parse_node.line}):')
+                tb = traceback.extract_tb(sys.exc_info()[2])
+                for entry in tb[1:]:
+                    print(f"File: {entry.filename}, line {entry.lineno}, in {entry.name}", file=sys.stderr)
+                    print(f"  {entry.line}", file=sys.stderr)
+        finally:
+            self.destroy()
 
 
 class PipeRunner(Runner[Pipe]):
@@ -146,4 +162,5 @@ class PlayBookRunner(Runner[object]):
             await self.run_queue(context=context)
             self.destroy()
         except Exception as e:
-            print(f'Error occurred in task {e}')
+            print(f"Error in playbook node : {self.node.parse_node.template_file_name}:{self.node.parse_node.line}")
+            print(str(e))

@@ -1,9 +1,8 @@
 from typing import Dict, Any
 
-from cropsflow.common import Pipe, pipe, TaskContext, option, DataModel
+from cropsflow.common import Pipe, pipe, TaskContext, option, DataModel,Metric
 
 from ..monitor import Monitor
-from ..metrix import Metric
 
 
 @pipe(selector='monitor-get-metric-pipe')

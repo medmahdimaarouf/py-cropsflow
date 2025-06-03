@@ -14,7 +14,7 @@ from .platform_options import PlatformOptions
 from .routes import get_api_router
 
 
-class GatewayApplicationPlatform(ApplicationPlatform):
+class RemoteApplicationPlatform(ApplicationPlatform):
     __server_thread: threading.Thread
 
     async def start(self, module: Type[Any], options: PlatformOptions = PlatformOptions(), args: list[str] = []) -> Application:
@@ -34,4 +34,4 @@ class GatewayApplicationPlatform(ApplicationPlatform):
         await uvicorn.Server.shutdown()
 
 
-CropsFlowGateway = GatewayApplicationPlatform()
+CropsFlowRemote = RemoteApplicationPlatform()

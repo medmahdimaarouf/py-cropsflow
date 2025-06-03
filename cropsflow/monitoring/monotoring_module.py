@@ -2,6 +2,7 @@ from cropsflow.common import inject, DynamicModule, ValueProviderMetaData, Injec
 from cropsflow.common.decorators import module
 from cropsflow.router import Router
 from .config import MonitoringModuleConfig
+from .metrix import CPUGaugeMetric, RAMGaugeMetric
 from .monitor import Monitor
 from .pipes import MonitorGetMetricPipe
 
@@ -26,6 +27,9 @@ class MonitoringModule(Init):
     @inject(arg_name='monitor', token=Monitor, optional=False)
     @inject(arg_name='config', token=MONITORING_MODULE_CONFIG_INJECTION_TOKEN, optional=True)
     async def init(self, monitor: Monitor, router: Router = None, config: MonitoringModuleConfig = MonitoringModuleConfig()) -> None:
+        monitor.register_metric(name='cpu_gauge_metric', metric=CPUGaugeMetric())
+        monitor.register_metric(name='ram_gauge_metric', metric=RAMGaugeMetric())
+
         if router is not None:
             events_router: Router = Router(prefix='/monitor')
 

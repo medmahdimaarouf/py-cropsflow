@@ -19,6 +19,7 @@ class ApplicationPlatform(ABC):
         self.scanner = DependenciesScanner(app=self.application)
 
     async def init(self, module: Type[Any], options: ApplicationOptions = None, overrides: list[Type[any]] = []) -> Application:
+
         try:
             print("Initializing ...")
             print("scanning dependencies ...")
@@ -30,8 +31,8 @@ class ApplicationPlatform(ABC):
             print('Modules initializing...')
             await self.__initialize_modules()
             print('Application initialized successfully')
-            print('Building tasks ...')
-            self.__build_tasks()
+            #print('Building tasks ...')
+            #self.__build_tasks()
             return self.application
         except Exception as e:
             if options.debug:

@@ -3,27 +3,32 @@ from typing import Dict, List
 
 
 @dataclass
-class TaskPlaybookParseNode:
-    selector: str
-    options: Dict[str, str] = field(default_factory=dict)
-    children: List["TaskPlaybookParseNode"] = field(default_factory=list)
+class ParseNode:
     line: int = field(default_factory=int)
+    source: str = field(default_factory=str)
+    column: int = field(default_factory=int)
+    template_file_name: str = field(default_factory=str)
 
 
+@dataclass
+class PlaybookParseNode(ParseNode):
+    selector: str = field(default_factory=str)
+    options: Dict[str, str] = field(default_factory=dict)
+    children: List["PlaybookParseNode"] = field(default_factory=list)
+
+
+TaskPlaybookParseTree = PlaybookParseNode
 TaskMetaDataParseNode = Dict[str, str]
-TaskPlaybookParseTree = List[TaskPlaybookParseNode]
 TaskInputSchemaParseTree = Dict[str, str]
 
 
 @dataclass
 class TaskParseTree:
-    playbook: TaskPlaybookParseTree = field(default_factory=list)
+    playbook: TaskPlaybookParseTree = None
     metadata: Dict[str, str] = field(default_factory=dict)
     input_schema: None = None
 
-    def __init__(self, meta_data: Dict[str, str], playbook: TaskPlaybookParseTree, dataset: str = None,
-                 bucket: str = None):
+    def __init__(self, meta_data: Dict[str, str], playbook: TaskPlaybookParseTree):
         self.metadata = meta_data
         self.playbook = playbook
-        self.dataset = dataset
-        self.bucket = bucket
+        self.input_schema = None

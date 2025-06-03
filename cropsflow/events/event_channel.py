@@ -1,4 +1,5 @@
 import datetime
+import time
 from collections import deque
 from typing import List, Callable
 
@@ -8,14 +9,19 @@ EventSubscriber = Callable[[Event], None]
 
 
 class EventChannel:
+    id: str
     title: str
     description: str
+    created_at: float
+    owner: str
     __events: deque[Event] = deque()
     __subscribers: List[EventSubscriber] = []
 
-    def __init__(self, title: str, description: str = ''):
+    def __init__(self, id: str, title: str, description: str = ''):
+        self.id = id
         self.title = title
         self.description = description
+        self.created_at = time.time()
 
     def clear_events(self):
         self.__events.clear()

@@ -1,4 +1,4 @@
-from typing import Any, Type, Dict
+from typing import Any, Type, Dict, override
 
 from cropsflow.common.decorators import InjectionScope, service
 from cropsflow.common.utils import InjectionToken
@@ -22,18 +22,19 @@ class Application(Container):
 
     def get_orchestrator(self) -> 'Orchestrator':
         from cropsflow.orchestrator.orchestrator import Orchestrator
-        return self.get(token=Orchestrator).resolve[Orchestrator](scope=InjectionScope.DEFAULT, optional=True)
+        return self.get(token=Orchestrator).resolve(scope=InjectionScope.DEFAULT, optional=True)
 
     def get_monitor(self):
         from cropsflow.monitoring import Monitor
-        return self.get(token=Monitor).resolve[Monitor](scope=InjectionScope.DEFAULT, optional=True)
+        return self.get(token=Monitor).resolve(scope=InjectionScope.DEFAULT, optional=True)
 
     def get_data_sources(self):
         from cropsflow.data import DataSourcesRegister
-        return self.get(token=DataSourcesRegister).resolve[DataSourcesRegister](scope=InjectionScope.DEFAULT, optional=True)
+        return self.get(token=DataSourcesRegister).resolve(scope=InjectionScope.DEFAULT, optional=True)
 
     def module(self, meta_type: Type[Any]) -> Container:
         return self.modules.get(meta_type)
 
-    def get_task(self, meta_type: Type[Any]) -> Container:
-        return self.tasks.get(meta_type)
+    @override
+    def get_task(self, token: Type[Any]) -> Container:
+        return self.tasks.get(token)

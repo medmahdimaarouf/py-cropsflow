@@ -8,7 +8,7 @@ from .playbook import PlaybookNode, PLAYBOOK_NODES_CORE_OPTIONS_KEYS
 from cropsflow.core.abstracts import Builder
 from cropsflow.core.exceptions.builder import *
 from cropsflow.core.injector import Container, Task
-from cropsflow.core.parser import TaskPlaybookParseNode, parse_task_template, TaskParseTree
+from cropsflow.core.parser import PlaybookParseNode, parse_task_template, TaskParseTree
 from cropsflow.core.scanner.metadata_scanner import scan_class_options
 from cropsflow.core.utils import parse_value
 
@@ -63,14 +63,7 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
     def build_input_schema(self, error_callback: Callable[[Exception], None]) -> TaskTemplateInputSchema:
         return TaskTemplateInputSchema()
 
-    def __build_template_playbook(self, error_callback: Callable[[Exception], None]) -> PlaybookNode:
-        runner_node: PlaybookNode = PlaybookNode(container=self.task)
-        for parse_node in self.parse_tree.playbook:
-            self.__build_playbook_node(parse_node=parse_node, error_handler=error_callback, parent=runner_node)
-        return runner_node
-
-    def __build_playbook_node(self, parse_node: TaskPlaybookParseNode, error_handler: Callable[[Exception], None],
-                              parent: PlaybookNode) -> None:
+    def __build_playbook_node(self, parse_node: PlaybookParseNode, error_handler: Callable[[Exception], None], parent: PlaybookNode) -> None:
         # initialize runner container
         action_or_pipe: Container = self.task.get_action(selector=parse_node.selector) or self.task.get_pipe(selector=parse_node.selector)
         if action_or_pipe is None:
@@ -98,23 +91,14 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
             else:
                 options.setdefault(key.strip(), action_or_pipe_option.default)
         # append the node to parent
-        node: PlaybookNode = parent.append(container=action_or_pipe, options=options)
-        # assign file line from parse node to track template code
-        node.file_line = parse_node.line
+        node: PlaybookNode = parent.append(parse_node=parse_node, container=action_or_pipe, options=options)
         # build its children
         for child_parse_node in parse_node.children:
-            self.__build_playbook_node(parent=node, parse_node=child_parse_node, error_handler=error_handler)
+            self.__build_playbook_node(parse_node=child_parse_node, parent=node, error_handler=error_handler)
+        print(len(node.children))
 
-
-def build_task(task: Task, error_callback: Callable = None) -> TaskTemplate:
-    has_error: bool = False
-
-    def handle_error(e):
-        nonlocal has_error
-        has_error = True
-        if error_callback:
-            error_callback(e)
-        else:
-            raise e
-
-    return TaskTemplateBuilder(task=task).build(error_callback=handle_error)
+    def __build_template_playbook(self, error_callback: Callable[[Exception], None]) -> PlaybookNode:
+        playbook_node: PlaybookNode = PlaybookNode(parse_node=self.parse_tree.playbook, container=self.task)
+        for parse_node in self.parse_tree.playbook.children:
+            self.__build_playbook_node(parse_node=parse_node, error_handler=error_callback, parent=playbook_node)
+        return playbook_node
