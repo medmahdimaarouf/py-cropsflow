@@ -9,4 +9,4 @@ from cropsflow.common import Action
 @option(key='msg', default='Error with no message option value')
 class RaiseErrorAction(Action):
     async def run(self, context: C, options: Dict[str, Any] = {}) -> TaskContext:
-        pass #raise Exception(options.get('msg'))
+        raise Exception(options.get('msg'))

@@ -95,8 +95,6 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
         # build its children
         for child_parse_node in parse_node.children:
             self.__build_playbook_node(parse_node=child_parse_node, parent=node, error_handler=error_handler)
-        print(len(node.children))
-
     def __build_template_playbook(self, error_callback: Callable[[Exception], None]) -> PlaybookNode:
         playbook_node: PlaybookNode = PlaybookNode(parse_node=self.parse_tree.playbook, container=self.task)
         for parse_node in self.parse_tree.playbook.children:

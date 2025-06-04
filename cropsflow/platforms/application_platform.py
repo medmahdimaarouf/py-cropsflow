@@ -31,8 +31,9 @@ class ApplicationPlatform(ABC):
             print('Modules initializing...')
             await self.__initialize_modules()
             print('Application initialized successfully')
-            #print('Building tasks ...')
-            #self.__build_tasks()
+            print('Building tasks ...')
+            self.__build_tasks()
+            print('Tasks built successfully')
             return self.application
         except Exception as e:
             if options.debug:

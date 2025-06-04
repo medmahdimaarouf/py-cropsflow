@@ -50,7 +50,8 @@ class PlaybookNode:
         self.container = container
         self.options = options
         self.parse_node = parse_node
-
+        self.parent = parent
+        self.children = []
         if self.container.metadata.type == DecoratorMetaDataType.ACTION:
             self.type = EPlaybookNodeType.ACTION
         elif self.container.metadata.type == DecoratorMetaDataType.DATAPIPE:
@@ -61,9 +62,9 @@ class PlaybookNode:
             raise Exception(f'RunnerQueueException: {self.container.get_name()} is not a runnable dependency')
 
     def append(self, parse_node: ParseNode, container: Container, options: Dict[str, any]) -> 'PlaybookNode':
-        node: PlaybookNode = PlaybookNode(parse_node=parse_node, container=container, options=options, parent=self)
-        self.children.append(node)
-        return node
+        child_node: PlaybookNode = PlaybookNode(parse_node=parse_node, container=container, options=options, parent=self)
+        self.children.append(child_node)
+        return child_node
 
     def remove(self, container: Container) -> 'PlaybookNode':
         self.children = [child for child in self.children if child.container.id != container.id]

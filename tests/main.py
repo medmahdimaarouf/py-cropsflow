@@ -8,7 +8,7 @@ import asyncio
 async def start():
     application = await CropsFlow.start(AppModule)
     worker: Worker = application.get_orchestrator().create_worker(meta_type=AppTask)
-    #worker.start()
+    worker.start()
     return application
 
 
