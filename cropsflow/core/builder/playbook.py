@@ -31,7 +31,7 @@ class PlaybookNode:
     parse_node: PlaybookParseNode
 
     @property
-    def shippable(self) -> bool:
+    def skippable(self) -> bool:
         return self.options.get(PLAYBOOK_IS_SKIPPABLE_OPTION_KEY, None) is True
 
     @property

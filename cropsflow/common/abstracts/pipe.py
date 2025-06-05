@@ -10,6 +10,9 @@ D = TypeVar('D', bound=DataModel)
 class Pipe(Generic[D], ABC):
     data: D
 
+    def __init__(self):
+        self.data = None
+
     @abstractmethod
     def accumulate(self, context: TaskContext, options: Dict[str, Any] = {}, data: D = None, accessor: str = None) -> None:
         pass

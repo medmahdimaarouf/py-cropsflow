@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Optional, Callable
 
 from cropsflow.common.abstracts import TaskContext
-from .runner import PlayBookRunner
+from .runner import PlayBookRunner, RunnerFlag
 from .worker_monitor import WorkerMonitor
 
 
@@ -56,7 +56,10 @@ class Worker(threading.Thread):
             raise
         else:
             self.status = WorkerStatus.COMPLETED
-            print(f"TaskWorker {self.id} completed.")
+            if self.__runner.flag.value == RunnerFlag.ERROR:
+                print(f"TaskWorker {self.id} completed with error.")
+            else:
+                print(f"TaskWorker {self.id} completed.")
             if self._on_complete_callback:
                 self._on_complete_callback(self)
 

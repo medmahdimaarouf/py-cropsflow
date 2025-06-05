@@ -1,6 +1,5 @@
 import gc
 import inspect
-import sys
 import traceback
 from abc import abstractmethod, ABC
 from asyncio import sleep
@@ -12,13 +11,16 @@ from typing import List, TypeVar, Generic, Callable, Optional, cast
 from cropsflow.common import TaskContext, ActionDecoratorMetaData, DecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe, DataModel
 from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
 from cropsflow.core.utils import BehaviorSubject
+from .exceptions import RunnerException
+from .exceptions.runner_exceptions import print_traceback_from_frame_of
 
 I = TypeVar('I')
 
 
-class ERunnerStatus(Enum):
+class RunnerFlag(Enum):
     READY = 'READY',
     RUNNING = 'RUNNING',
+    ERROR = "ERROR",
     STOPPED = 'STOPPED',
     COMPLETED = 'COMPLETED'
 
@@ -28,7 +30,7 @@ class Runner(Generic[I], ABC):
     node: PlaybookNode
     async_runners: List["Runner"] = []
     sync_runners: deque["Runner"] = deque()
-    status: BehaviorSubject[ERunnerStatus] = BehaviorSubject(ERunnerStatus.READY)
+    flag: BehaviorSubject[RunnerFlag] = BehaviorSubject(RunnerFlag.READY)
     instance: I = None
     context: TaskContext = None
     stopped: bool = False
@@ -50,18 +52,18 @@ class Runner(Generic[I], ABC):
         pass
 
     def stop(self):
-        self.stopped = True
+        self.flag.next(RunnerFlag.STOPPED)
         for runner in self.sync_runners:
             runner.stop()
 
     def resume(self):
-        self.stopped = False
+        self.flag.next(RunnerFlag.RUNNING)
         for runner in self.sync_runners:
             runner.resume()
 
     @classmethod
     async def run_queue(self, context: TaskContext) -> None:
-        while len(self.sync_runners):
+        while len(self.sync_runners) and self.flag.value is RunnerFlag.RUNNING:
             while self.stopped:
                 await sleep(500)
             runner = self.sync_runners.popleft()
@@ -70,6 +72,9 @@ class Runner(Generic[I], ABC):
                 runner.run(context=copy(context))
             else:
                 await runner.run(context=copy(context))
+
+            if runner.flag.value is RunnerFlag.ERROR:
+                self.flag.next(RunnerFlag.ERROR)
         gc.collect()
 
     def init(self, context: TaskContext = None, **args) -> None:
@@ -92,6 +97,8 @@ class Runner(Generic[I], ABC):
 
 class ActionRunner(Runner[Action]):
     async def run(self, context: TaskContext) -> None:
+        self.flag.next(RunnerFlag.RUNNING)
+
         async def next_callback(ctx: TaskContext) -> None:
             await self.run_queue(context=ctx)
 
@@ -102,18 +109,19 @@ class ActionRunner(Runner[Action]):
 
             self.instance.next_callback: Callable[[TaskContext], None] = next_callback if not is_auto_next else None
             next_context = await self.instance.run(context=copy(context), options=self.node.options)
+            '''
+            @todo some instances doesn't return context , None instead is returned -> rais clear exception and log
+            '''
             if is_auto_next:
                 await self.run_queue(context=next_context)
+            self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed action {self.node.container.get_name()}")
         except Exception as e:
-            if self.node.shippable:
-                raise e
+            if not self.node.skippable:
+                print_traceback_from_frame_of(self.instance.run, exc=e)
             else:
-                print(f'Action : {self.node.parse_node.template_file_name} error occured (line {self.node.parse_node.line}):')
-                tb = traceback.extract_tb(sys.exc_info()[2])
-                for entry in tb[1:]:
-                    print(f"File: {entry.filename}, line {entry.lineno}, in {entry.name}", file=sys.stderr)
-                    print(f"  {entry.line}", file=sys.stderr)
+                traceback.print_tb(e.__traceback__)
+            self.flag.next(RunnerFlag.ERROR)
         finally:
             self.destroy()
 
@@ -136,19 +144,23 @@ class PipeRunner(Runner[Pipe]):
         return None
 
     async def run(self, context: TaskContext) -> None:
+        self.flag.next(RunnerFlag.RUNNING)
         try:
             print(f"running pipe {self.node.container.get_name()} ...")
             self.init(context=context)
             await self.run_queue(context=context)
             if self.accumulator_pipe:
                 self.accumulator_pipe.accumulate(data=self.instance.data, accessor=self.node.accumulator_accessor)
-            self.destroy()
+            self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed pipe {self.node.container.get_name()}")
         except Exception as e:
-            if not self.node.shippable:
-                raise e
+            if not self.node.skippable:
+                print(e)
             else:
-                print(f'Pipe {self.node.container.get_name()} error occured (line {self.node.file_line}):\n {e} ')
+                traceback.print_tb(e.__traceback__)
+            self.flag.next(RunnerFlag.ERROR)
+        finally:
+            self.destroy()
 
     def accumulate(self, data: DataModel, accessor: str = None):
         self.instance.accumulate(context=self.context, data=data, accessor=accessor, options=self.node.options)
@@ -158,9 +170,15 @@ class PlayBookRunner(Runner[object]):
 
     async def run(self, context: TaskContext) -> None:
         try:
+            self.flag.next(RunnerFlag.RUNNING)
             self.init()
             await self.run_queue(context=context)
+            self.flag.next(RunnerFlag.COMPLETED)
             self.destroy()
+        except RunnerException as e:
+            print(f"Playbook : {self.node.parse_node.template_file_name}:{self.node.parse_node.line}", " error : ", e.__str__())
+            e.print_partial_traceback()
+            self.flag.next(RunnerFlag.ERROR)
         except Exception as e:
-            print(f"Error in playbook node : {self.node.parse_node.template_file_name}:{self.node.parse_node.line}")
-            print(str(e))
+            traceback.print_tb(e.__traceback__)
+            self.flag.next(RunnerFlag.ERROR)
