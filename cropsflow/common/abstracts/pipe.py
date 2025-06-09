@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, TypeVar, Generic
+from typing import Any, Dict, TypeVar, Generic, Optional
 
-from ..models import DataModel
 from .task_context import TaskContext
 
-D = TypeVar('D', bound=DataModel)
+D = TypeVar('D')
 
 
 class Pipe(Generic[D], ABC):
-    data: D
+    data: Optional[D] = None
 
     def __init__(self):
         self.data = None

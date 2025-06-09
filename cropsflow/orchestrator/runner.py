@@ -8,11 +8,10 @@ from copy import copy
 from enum import Enum
 from typing import List, TypeVar, Generic, Callable, Optional, cast
 
-from cropsflow.common import TaskContext, ActionDecoratorMetaData, DecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe, DataModel
+from cropsflow.common import TaskContext, ActionDecoratorMetaData, DecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe
 from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
 from cropsflow.core.utils import BehaviorSubject
 from .exceptions import RunnerException
-from .exceptions.runner_exceptions import print_traceback_from_frame_of
 
 I = TypeVar('I')
 
@@ -118,30 +117,32 @@ class ActionRunner(Runner[Action]):
             print(f"completed action {self.node.container.get_name()}")
         except Exception as e:
             if not self.node.skippable:
-                print_traceback_from_frame_of(self.instance.run, exc=e)
+                raise e
             else:
-                traceback.print_tb(e.__traceback__)
-            self.flag.next(RunnerFlag.ERROR)
+                traceback.print_exception(e)
         finally:
             self.destroy()
 
 
 class PipeRunner(Runner[Pipe]):
-    accumulator_pipe: 'PipeRunner' = None
+    accumulator_pipe_runner: 'PipeRunner' = None
 
     def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
         super().__init__(node=node, parent=parent)
-        self.accumulator_pipe = self.find_parent_pipe(id=self.node.accumulator_id)
-        if self.node.accumulator_id and not self.accumulator_pipe:
-            raise Exception(f'Could not locate target accumulator pipe with id {self.node.accumulator_id}')
+        self.accumulator_pipe_runner = self.find_accumulator_pipe_runner(accumulator_pipe_id=self.node.accumulator_id)
 
-    def find_parent_pipe(self, id: str = None) -> Optional["PipeRunner"]:
+    def find_accumulator_pipe_runner(self, accumulator_pipe_id: str = None) -> Optional["PipeRunner"]:
         parent: PipeRunner = self.parent
         while parent:
-            parent = parent.parent
-            if isinstance(parent, PipeRunner) and (True if id is None else parent.node.options.get("id") == id):
-                return parent
-        return None
+            if isinstance(parent, PipeRunner):
+                if accumulator_pipe_id is None or parent.node.options.get("id") == accumulator_pipe_id:
+                    return parent
+            else:
+                parent = parent.parent
+        if accumulator_pipe_id is not None:
+            raise Exception(f'Could not locate target accumulator pipe with id {self.node.accumulator_id}')
+        else:
+            return None
 
     async def run(self, context: TaskContext) -> None:
         self.flag.next(RunnerFlag.RUNNING)
@@ -149,20 +150,19 @@ class PipeRunner(Runner[Pipe]):
             print(f"running pipe {self.node.container.get_name()} ...")
             self.init(context=context)
             await self.run_queue(context=context)
-            if self.accumulator_pipe:
-                self.accumulator_pipe.accumulate(data=self.instance.data, accessor=self.node.accumulator_accessor)
+            if self.accumulator_pipe_runner:
+                self.accumulator_pipe_runner.accumulate(data=self.instance.data, accessor=self.node.accumulator_accessor)
             self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed pipe {self.node.container.get_name()}")
         except Exception as e:
             if not self.node.skippable:
-                print(e)
+                raise e
             else:
-                traceback.print_tb(e.__traceback__)
-            self.flag.next(RunnerFlag.ERROR)
+                traceback.print_exception(e)
         finally:
             self.destroy()
 
-    def accumulate(self, data: DataModel, accessor: str = None):
+    def accumulate(self, data: any, accessor: str = None):
         self.instance.accumulate(context=self.context, data=data, accessor=accessor, options=self.node.options)
 
 
@@ -177,8 +177,10 @@ class PlayBookRunner(Runner[object]):
             self.destroy()
         except RunnerException as e:
             print(f"Playbook : {self.node.parse_node.template_file_name}:{self.node.parse_node.line}", " error : ", e.__str__())
-            e.print_partial_traceback()
+            # e.print_partial_traceback()
+            traceback.print_exception(e)
             self.flag.next(RunnerFlag.ERROR)
         except Exception as e:
-            traceback.print_tb(e.__traceback__)
+            # traceback.print_tb(e.__traceback__)
+            traceback.print_exception(e)
             self.flag.next(RunnerFlag.ERROR)

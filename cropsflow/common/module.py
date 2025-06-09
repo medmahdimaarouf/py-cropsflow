@@ -7,14 +7,22 @@ from .decorators.module import module
     declarations=[
         DelayAction,
         IterateAction,
+        CMDAction,
         MapPipe,
-        ListPipe
+        ListPipe,
+        IntegerPipe,
+        TextPipe,
+        DecimalPipe
     ],
     exports=[
         DelayAction,
         IterateAction,
+        CMDAction,
         MapPipe,
-        ListPipe
+        ListPipe,
+        IntegerPipe,
+        TextPipe,
+        DecimalPipe
     ]
 )
 class CommonModule:

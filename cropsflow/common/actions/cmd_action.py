@@ -7,7 +7,7 @@ from ..decorators import action, option
 
 @action(selector="cmd")
 @option(key='command', meta_type=str, required=True)
-class DelayAction(Action):
+class CMDAction(Action):
     def __init__(self):
         super().__init__()
 

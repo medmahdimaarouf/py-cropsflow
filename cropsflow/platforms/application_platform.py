@@ -1,4 +1,5 @@
 import inspect
+import sys
 from abc import ABC, abstractmethod
 from typing import Type, Any, Union
 
@@ -39,7 +40,7 @@ class ApplicationPlatform(ABC):
             if options.debug:
                 raise e
             else:
-                print(str(e))
+                print(str(e), file=sys.stderr)
                 raise e
                 return None
 
@@ -67,7 +68,7 @@ class ApplicationPlatform(ABC):
                     print('initialized module : ', module.get_name())
                 except Exception as e:
                     print(inspect.getfile(module.metadata.target))
-                    print(f"Error initializing module {module.metadata.target.__name__}")
+                    print(f"Error initializing module {module.metadata.target.__name__} : {str(e)}", file=sys.stderr)
                     # print_traceback()
                     raise e
 
@@ -78,9 +79,9 @@ class ApplicationPlatform(ABC):
             nonlocal has_errors
             has_errors = True
             if isinstance(e, TaskBuildException):
-                print(e.message)
+                print(e.message, file=sys.stderr)
             else:
-                print(str(e))
+                print(str(e), file=sys.stderr)
 
         for token, task in self.application.tasks.items():
             print(f"building task '{task.metadata.target.__name__}' ...")
@@ -88,7 +89,7 @@ class ApplicationPlatform(ABC):
             if has_errors is not True:
                 print(f"build task '{task.metadata.target.__name__}' completed successfully")
             else:
-                print(f"build task '{task.metadata.target.__name__}' Failed")
+                print(f"build task '{task.metadata.target.__name__}' Failed, file=sys.stderr")
         if has_errors:
-            print("Tasks build failed")
+            print("Tasks build failed", file=sys.stderr)
             exit(0)

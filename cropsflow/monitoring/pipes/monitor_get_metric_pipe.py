@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from cropsflow.common import Pipe, pipe, TaskContext, option, DataModel,Metric
+from cropsflow.common import Pipe, pipe, TaskContext, option, Metric
 
 from ..monitor import Monitor
 
@@ -13,7 +13,7 @@ class MonitorGetMetricPipe(Pipe):
     def __init__(self, monitor: Monitor):
         self.monitor = monitor
 
-    def accumulate(self, context: TaskContext, options: Dict[str, Any] = {}, data: DataModel = None, accessor: str = None) -> None:
+    def accumulate(self, context: TaskContext, options: Dict[str, Any] = {}, data: any = None, accessor: str = None) -> None:
         metric_name: str = options.get('name')
         metric: Metric = self.monitor.get_metric(metric_name.strip())
         if metric is not None:
