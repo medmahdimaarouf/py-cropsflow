@@ -13,7 +13,7 @@ class Action(Generic[C], ABC):
         pass
 
     async def next(self, context: TaskContext = None) -> None:
-        if self.next_callback is not None:
-            return await self.next_callback(context)
-        else:
-            return context
+        callback = getattr(self, 'next_callback', None)
+        if callback is not None:
+            return await callback(context)
+        return context

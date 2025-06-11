@@ -8,7 +8,8 @@ from copy import copy
 from enum import Enum
 from typing import List, TypeVar, Generic, Callable, Optional, cast
 
-from cropsflow.common import TaskContext, ActionDecoratorMetaData, DecoratorMetaData, InjectionScope, Action, Init, Destroy, Pipe
+from cropsflow.common import TaskContext, ActionDecoratorMetaData, DecoratorMetaData, InjectionScope, Action, Init, \
+    Destroy, Pipe
 from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
 from cropsflow.core.utils import BehaviorSubject
 from .exceptions import RunnerException
@@ -45,6 +46,12 @@ class Runner(Generic[I], ABC):
     def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
         self.node = node
         self.parent = parent
+        self.async_runners = []
+        self.sync_runners = deque()
+        self.flag = BehaviorSubject(RunnerFlag.READY)
+        self.instance = None
+        self.context = None
+        self.stopped = False
 
     @abstractmethod
     async def run(self, context: TaskContext) -> None:
@@ -151,7 +158,8 @@ class PipeRunner(Runner[Pipe]):
             self.init(context=context)
             await self.run_queue(context=context)
             if self.accumulator_pipe_runner:
-                self.accumulator_pipe_runner.accumulate(data=self.instance.data, accessor=self.node.accumulator_accessor)
+                self.accumulator_pipe_runner.accumulate(data=self.instance.get_data(),
+                                                        accessor=self.node.accumulator_accessor)
             self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed pipe {self.node.container.get_name()}")
         except Exception as e:
@@ -176,7 +184,8 @@ class PlayBookRunner(Runner[object]):
             self.flag.next(RunnerFlag.COMPLETED)
             self.destroy()
         except RunnerException as e:
-            print(f"Playbook : {self.node.parse_node.template_file_name}:{self.node.parse_node.line}", " error : ", e.__str__())
+            print(f"Playbook : {self.node.parse_node.template_file_name}:{self.node.parse_node.line}", " error : ",
+                  e.__str__())
             # e.print_partial_traceback()
             traceback.print_exception(e)
             self.flag.next(RunnerFlag.ERROR)

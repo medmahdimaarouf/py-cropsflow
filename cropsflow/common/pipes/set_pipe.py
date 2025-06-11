@@ -8,7 +8,8 @@ from ..decorators import pipe
 class SetPipe(Pipe[Set]):
 
     def __init__(self):
-        self.set_data(data=set[any]())
+        super().__init__(data=set[any]())
 
-    def accumulate(self, context: TaskContext, options: Dict[str, Any] = {}, data: any = None, accessor: str = None) -> None:
-        self.data.add(data)
+    def accumulate(self, context: TaskContext, options: Dict[str, Any] = {}, data: any = None,
+                   accessor: str = None) -> None:
+        self.get_data().add(data)

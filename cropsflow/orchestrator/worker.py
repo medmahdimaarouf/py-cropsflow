@@ -28,6 +28,8 @@ class Worker(threading.Thread):
             on_complete: Optional[Callable[['Worker'], None]] = None
     ):
         self.id = str(uuid.uuid4())
+        self.monitor = WorkerMonitor()
+        self.status = WorkerStatus.PENDING
         self.__runner = runner
         self._on_complete_callback = on_complete
 

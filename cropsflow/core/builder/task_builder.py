@@ -41,6 +41,7 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
 
     def __init__(self, task: Task):
         self.task = task
+        self.parse_tree = None
 
     def build(self, error_callback: Callable[[Exception], None] = None) -> TaskTemplate:
         self.parse_tree = parse_task_template(template_path=self.template_file_path(), error_callback=error_callback)
@@ -57,18 +58,23 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
         return inspect.getfile(self.task.metadata.target).strip()
 
     def build_metadata(self, error_callback: Callable[[Exception], None]) -> TaskTemplateMetaData:
-        return TaskTemplateMetaData(title=self.parse_tree.metadata.get('title'), description=self.parse_tree.metadata.get('description'),
-                                    readme=self.parse_tree.metadata.get('readme'), keywords=self.parse_tree.metadata.get('keywords') or [])
+        return TaskTemplateMetaData(title=self.parse_tree.metadata.get('title'),
+                                    description=self.parse_tree.metadata.get('description'),
+                                    readme=self.parse_tree.metadata.get('readme'),
+                                    keywords=self.parse_tree.metadata.get('keywords') or [])
 
     def build_input_schema(self, error_callback: Callable[[Exception], None]) -> TaskTemplateInputSchema:
         return TaskTemplateInputSchema()
 
-    def __build_playbook_node(self, parse_node: PlaybookParseNode, error_handler: Callable[[Exception], None], parent: PlaybookNode) -> None:
+    def __build_playbook_node(self, parse_node: PlaybookParseNode, error_handler: Callable[[Exception], None],
+                              parent: PlaybookNode) -> None:
         # initialize runner container
-        action_or_pipe: Container = self.task.get_action(selector=parse_node.selector) or self.task.get_pipe(selector=parse_node.selector)
+        action_or_pipe: Container = self.task.get_action(selector=parse_node.selector) or self.task.get_pipe(
+            selector=parse_node.selector)
         if action_or_pipe is None:
             error_handler(
-                UnknownNodeSelectorException(template_file_path=self.template_file_path(), node_name=parse_node.selector, line=parse_node.line, column=0))
+                UnknownNodeSelectorException(template_file_path=self.template_file_path(),
+                                             node_name=parse_node.selector, line=parse_node.line, column=0))
             return
 
         # building runner options
@@ -77,17 +83,20 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
         options: Dict[str, Any] = {}
 
         for key, value in parsed_node_options:
-            if action_or_pipe_options.keys().__contains__(key.strip()) is not None or key.strip() in PLAYBOOK_NODES_CORE_OPTIONS_KEYS:
+            if action_or_pipe_options.keys().__contains__(
+                    key.strip()) is not None or key.strip() in PLAYBOOK_NODES_CORE_OPTIONS_KEYS:
                 options[key] = parse_value(val_str=value)
             else:
                 error_handler(
-                    UnknownOptionException(template_file_path=self.template_file_path(), name=key, node_name=parse_node.selector, line=parse_node.line)
+                    UnknownOptionException(template_file_path=self.template_file_path(), name=key,
+                                           node_name=parse_node.selector, line=parse_node.line)
                 )
 
         for key, action_or_pipe_option in action_or_pipe_options.items():
             if key.strip() not in options and action_or_pipe_option.required is True:
                 error_handler(
-                    MissedRequiredOptionException(template_file_path=self.template_file_path(), name=key, node_name=parse_node.selector, line=parse_node.line))
+                    MissedRequiredOptionException(template_file_path=self.template_file_path(), name=key,
+                                                  node_name=parse_node.selector, line=parse_node.line))
             else:
                 options.setdefault(key.strip(), action_or_pipe_option.default)
         # append the node to parent
@@ -95,6 +104,7 @@ class TaskTemplateBuilder(Builder[TaskTemplate]):
         # build its children
         for child_parse_node in parse_node.children:
             self.__build_playbook_node(parse_node=child_parse_node, parent=node, error_handler=error_handler)
+
     def __build_template_playbook(self, error_callback: Callable[[Exception], None]) -> PlaybookNode:
         playbook_node: PlaybookNode = PlaybookNode(parse_node=self.parse_tree.playbook, container=self.task)
         for parse_node in self.parse_tree.playbook.children:

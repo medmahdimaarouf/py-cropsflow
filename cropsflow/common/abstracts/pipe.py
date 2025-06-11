@@ -9,8 +9,8 @@ D = TypeVar('D')
 class Pipe(Generic[D], ABC):
     data: Optional[D] = None
 
-    def __init__(self):
-        self.data = None
+    def __init__(self, data: D = None):
+        self.set_data(data=data)
 
     @abstractmethod
     def accumulate(self, context: TaskContext, options: Dict[str, Any] = {}, data: D = None, accessor: str = None) -> None:
@@ -18,3 +18,6 @@ class Pipe(Generic[D], ABC):
 
     def set_data(self, data: D) -> None:
         self.data = data
+
+    def get_data(self) -> D:
+        return self.data

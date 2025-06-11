@@ -26,9 +26,9 @@ class PlaybookNode:
     parent: 'PlaybookNode' = None
     container: Container
     options: Dict[str, any]
-    type: EPlaybookNodeType
     children: List['PlaybookNode'] = []
     parse_node: PlaybookParseNode
+    type: EPlaybookNodeType
 
     @property
     def skippable(self) -> bool:
@@ -47,10 +47,10 @@ class PlaybookNode:
         return self.options.get(PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, None)
 
     def __init__(self, parse_node: ParseNode, container: Container, options: Dict[str, any] = {}, parent: 'PlaybookNode' = None):
+        self.parent = parent
         self.container = container
         self.options = options
         self.parse_node = parse_node
-        self.parent = parent
         self.children = []
         if self.container.metadata.type == DecoratorMetaDataType.ACTION:
             self.type = EPlaybookNodeType.ACTION

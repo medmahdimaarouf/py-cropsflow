@@ -19,6 +19,8 @@ class Orchestrator:
     def __init__(self, injector: Injector):
         self.container = injector.container
         self.pool = {}
+        self.queue = WorkersQueue()
+        self.scheduler = WorkersScheduler()
 
     def create_worker(self, meta_type: Type) -> Worker:
         task: Container = self.container.get_task(meta_type)

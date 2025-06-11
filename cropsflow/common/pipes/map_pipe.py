@@ -8,11 +8,11 @@ from ..decorators import pipe
 class MapPipe(Pipe[Dict]):
 
     def __init__(self):
-        self.set_data(data=dict[str, any]())
+        super().__init__(data=dict[str, any]())
 
     def accumulate(self, context: TaskContext, data: any, accessor: str, options: Dict[str, Any] = {}, ) -> None:
 
         if accessor is not None and len(accessor) > 0:
-            self.data.setdefault(accessor, data)
+            self.get_data().setdefault(accessor, data)
         else:
             raise Exception('Map pipe accessor is None expected not empty str ')

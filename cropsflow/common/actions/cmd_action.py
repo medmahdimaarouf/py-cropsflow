@@ -8,8 +8,6 @@ from ..decorators import action, option
 @action(selector="cmd")
 @option(key='command', meta_type=str, required=True)
 class CMDAction(Action):
-    def __init__(self):
-        super().__init__()
 
     async def run(self, context: TaskContext, options: Dict[str, Any] = {}) -> TaskContext:
         try:

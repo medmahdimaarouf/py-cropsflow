@@ -6,6 +6,9 @@ from .worker import Worker
 class WorkersQueue:
     __queue: deque = deque()
 
+    def __init__(self):
+        self.__queue = deque()
+
     @property
     def workers_list(self) -> list[Worker]:
         return list(self.__queue)
