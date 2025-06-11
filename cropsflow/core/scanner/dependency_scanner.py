@@ -12,10 +12,9 @@ from ..utils.tokens_generator import generate_token
 
 
 class DependenciesScanner:
-    app: Application
 
     def __init__(self, app: Application):
-        self.app = app
+        self.app: Application = app
 
     def scan_modules(self, dep: Union[ModuleDef, Type[Any]], overrides: list[Union[ModuleDef, Type[Any]]] = []):
         for override in overrides:
@@ -27,11 +26,13 @@ class DependenciesScanner:
             module_def = module_def()
         wrap: DependencyWrap[Module] = None
         if isinstance(module_def, DynamicModule):
-            wrap = self.register_module(module_metadata=scanModuleMetaData(module_def.module), dynamic=True, is_global=is_global or module_def.is_global)
+            wrap = self.register_module(module_metadata=scanModuleMetaData(module_def.module), dynamic=True,
+                                        is_global=is_global or module_def.is_global)
             for provider in module_def.providers if module_def.providers is not None else []:
                 wrap.dep.register(token=provider.provide, dep=provider)
         else:
-            wrap = self.register_module(module_metadata=scanModuleMetaData(module_def), dynamic=False, is_global=is_global)
+            wrap = self.register_module(module_metadata=scanModuleMetaData(module_def), dynamic=False,
+                                        is_global=is_global)
         if wrap.inserted:
             module_metadata: ModuleDecoratorMetaData = wrap.dep.metadata
             for import_def in module_metadata.imports:

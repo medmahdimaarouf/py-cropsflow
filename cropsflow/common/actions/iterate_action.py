@@ -7,10 +7,10 @@ from ..decorators import action, option
 @action(selector="iterate")
 @option(key='of', meta_type=List)
 class IterateAction(Action):
-    it: Iterable[Any] = []
 
     def __init__(self):
         super().__init__()
+        self.it: Iterable[Any] = []
 
     async def run(self, context: TaskContext, options: Dict[str, Any] = None) -> TaskContext:
         for i in self.of:

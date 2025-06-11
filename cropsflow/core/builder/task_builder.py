@@ -32,16 +32,14 @@ class TaskTemplate:
     template_file_path: str = field(default=str)
     metadata: TaskTemplateMetaData = field(default_factory=TaskTemplateMetaData)
     input_schema: TaskTemplateInputSchema = field(default_factory=TaskTemplateInputSchema)
-    playbook: PlaybookNode = None
+    playbook: PlaybookNode = field(default=None)
 
 
 class TaskTemplateBuilder(Builder[TaskTemplate]):
-    task: Task
-    parse_tree: TaskParseTree = None
 
     def __init__(self, task: Task):
-        self.task = task
-        self.parse_tree = None
+        self.task: Task = task
+        self.parse_tree: TaskParseTree = None
 
     def build(self, error_callback: Callable[[Exception], None] = None) -> TaskTemplate:
         self.parse_tree = parse_task_template(template_path=self.template_file_path(), error_callback=error_callback)

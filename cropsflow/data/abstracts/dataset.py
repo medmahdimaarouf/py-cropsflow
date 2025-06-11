@@ -5,10 +5,9 @@ I = TypeVar('I')
 
 
 class DataSet(Generic[I], ABC):
-    name: str
 
     def __init__(self, name: str):
-        self.name = name
+        self.name: str = name
 
     @abstractmethod
     def find_one(self, query: dict[any, any]) -> Optional[Dict]:

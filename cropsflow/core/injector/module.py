@@ -9,18 +9,13 @@ from .task import Task
 
 
 class Module(Container):
-    metadata: ModuleDecoratorMetaData
-    imports: Dict[InjectionToken, "Module"]
-    exports: Dict[InjectionToken, Container]
-    is_global: bool
-    exposed: bool
 
     def __init__(self, metadata: ModuleDecoratorMetaData, host: Container = None):
         super().__init__(metadata=metadata, host=host)
-        self.imports = {}  # Instance-specific initialization
-        self.exports = {}  # Instance-specific initialization
-        self.is_global = False
-        self.exposed = False
+        self.imports: Dict[InjectionToken, "Module"] = {}  # Instance-specific initialization
+        self.exports: Dict[InjectionToken, Container] = {}  # Instance-specific initialization
+        self.is_global: bool = False
+        self.exposed: bool = False
 
     def has_import(self, module: "Module") -> bool:
         return self.imports.get(module.metadata.target) is not None

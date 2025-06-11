@@ -17,9 +17,6 @@ class WorkerStatus(Enum):
 
 
 class Worker(threading.Thread):
-    id: str
-    monitor: WorkerMonitor = WorkerMonitor()
-    status: WorkerStatus = WorkerStatus.PENDING
 
     def __init__(
             self,
@@ -27,9 +24,9 @@ class Worker(threading.Thread):
             daemon: bool = False,
             on_complete: Optional[Callable[['Worker'], None]] = None
     ):
-        self.id = str(uuid.uuid4())
-        self.monitor = WorkerMonitor()
-        self.status = WorkerStatus.PENDING
+        self.id: str = str(uuid.uuid4())
+        self.monitor: WorkerMonitor = WorkerMonitor()
+        self.status: WorkerStatus = WorkerStatus.PENDING
         self.__runner = runner
         self._on_complete_callback = on_complete
 

@@ -10,8 +10,6 @@ from ..decorators import action, option
 @action(selector="sleep")
 @option(key='seconds', meta_type=int)
 class DelayAction(Action):
-    def __init__(self):
-        super().__init__()
 
     async def run(self, context: TaskContext, options: Dict[str, Any] = {}) -> TaskContext:
         seconds = int(options.get('seconds', 5))

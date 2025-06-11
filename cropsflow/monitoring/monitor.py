@@ -6,11 +6,10 @@ from cropsflow.common import service, InjectionScope
 
 @service(scope=InjectionScope.DEFAULT)
 class Monitor:
-    name: str
-    metrix: Dict[str, Metric] = {}
 
-    def __int__(self, name: str):
-        self.name = name
+    def __init__(self):
+        self.name: str = ''
+        self.metrix: Dict[str, Metric] = {}
 
     def register_metric(self, name: str, metric: Metric) -> Metric:
         if name.strip() not in self.metrix:

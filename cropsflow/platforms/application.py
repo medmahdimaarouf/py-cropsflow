@@ -17,8 +17,8 @@ class Application(Container):
 
     def __init__(self, args: list[str] = []):
         super().__init__(metadata=scanServiceMetaData(Application), instance=self, host=None)
-        self.register_core_provider(token=Application, instance=self)
         self.args = args
+        self.register_core_provider(token=Application, instance=self)
 
     def get_orchestrator(self) -> 'Orchestrator':
         from cropsflow.orchestrator.orchestrator import Orchestrator

@@ -17,9 +17,12 @@ from .routes import get_api_router
 class RemoteApplicationPlatform(ApplicationPlatform):
     __server_thread: threading.Thread
 
-    async def start(self, module: Type[Any], options: PlatformOptions = PlatformOptions(), args: list[str] = []) -> Application:
-        await self.init(module, options=options, overrides=[RouterModule, OrchestratorModule, MonitoringModule, EventsModule, DataModule])
-        self.__server_thread = threading.Thread(target=self.__start_server, name='CropsFlow Gateway Platform', args=[options], daemon=False)
+    async def start(self, module: Type[Any], options: PlatformOptions = PlatformOptions(),
+                    args: list[str] = []) -> Application:
+        await self.init(module, options=options,
+                        overrides=[RouterModule, OrchestratorModule, MonitoringModule, EventsModule, DataModule])
+        self.__server_thread = threading.Thread(target=self.__start_server, name='CropsFlow Gateway Platform',
+                                                args=[options], daemon=False)
         self.__server_thread.start()
         print(f"CropsFlow server is running on http://{'localhost'}:{8000}")
 
@@ -29,8 +32,7 @@ class RemoteApplicationPlatform(ApplicationPlatform):
         uvicorn.run(app, host="127.0.0.1", port=8000)
         return self.application
 
-    @classmethod
-    async def shutdown(cls):
+    async def shutdown(self):
         await uvicorn.Server.shutdown()
 
 

@@ -24,11 +24,6 @@ TaskInputSchemaParseTree = Dict[str, str]
 
 @dataclass
 class TaskParseTree:
-    playbook: TaskPlaybookParseTree = None
+    playbook: TaskPlaybookParseTree = field(default=None)
     metadata: Dict[str, str] = field(default_factory=dict)
-    input_schema: None = None
-
-    def __init__(self, meta_data: Dict[str, str], playbook: TaskPlaybookParseTree):
-        self.metadata = meta_data
-        self.playbook = playbook
-        self.input_schema = None
+    input_schema: None = field(default=None)

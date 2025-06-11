@@ -14,7 +14,7 @@ class Option(Generic[T]):
     description: str = ''
     required: bool = False
 
-    def __int__(self, key: str, meta_type: Type[T], required: bool = False, default: T = None, name: str = '',
+    def __init__(self, key: str, meta_type: Type[T], required: bool = False, default: T = None, name: str = '',
                 description: str = '', select: List[T] = None):
         self.key = key.strip()
         self.meta_type = meta_type

@@ -21,10 +21,10 @@ def module(
         else:
             raise Exception("Duplicated Module decorator")
         setattr(cls, DECORATOR_WATERMARKS, watermarks)
-        setattr(cls, MODULE_DECORATOR_DECLARATIONS_KEY, declarations)
-        setattr(cls, MODULE_DECORATOR_IMPORTS_KEY, imports)
-        setattr(cls, MODULE_DECORATOR_PROVIDERS_KEY, providers)
-        setattr(cls, MODULE_DECORATOR_EXPORTS_KEY, exports)
+        setattr(cls, MODULE_DECORATOR_DECLARATIONS_KEY, [_ for _ in declarations if _ is not None])
+        setattr(cls, MODULE_DECORATOR_IMPORTS_KEY, [_ for _ in imports if _ is not None])
+        setattr(cls, MODULE_DECORATOR_PROVIDERS_KEY, [_ for _ in providers if _ is not None])
+        setattr(cls, MODULE_DECORATOR_EXPORTS_KEY, [_ for _ in exports if _ is not None])
         return cls
 
     return decorator

@@ -10,19 +10,14 @@ T = TypeVar('T')
 
 
 class BaseContainer(Generic[T], ABC):
-    id: str
-    injector: "BaseInjector"
-    metadata: DecoratorMetaData
-    host: "BaseContainer"
-    deps: Dict[InjectionToken, "BaseContainer"]
-    core_providers: Dict[InjectionToken, any]
 
     def __init__(self, metadata: DecoratorMetaData, instance: T = None, host: "BaseContainer" = None):
-        self.id = str(uuid.uuid4())  # Generate a unique ID for the object
-        self.metadata = metadata  # Store the metadata
-        self.host = host  # Set the host container
-        self.deps = {}  # Instantiate Container
-        self.core_providers = {}
+        self.id: str = str(uuid.uuid4())  # Generate a unique ID for the object
+        self.metadata: DecoratorMetaData = metadata  # Store the metadata
+        self.host: BaseContainer = host  # Set the host container
+        self.deps: Dict[InjectionToken, BaseContainer] = {}  # Instantiate Container
+        self.core_providers: Dict[InjectionToken, any] = {}
+        self.injector: BaseInjector = None
 
     @abstractmethod
     def get_name(self) -> str:

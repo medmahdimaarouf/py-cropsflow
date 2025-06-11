@@ -16,9 +16,11 @@ class ResolveStatus(Enum):
 
 
 class BaseInjector(Generic[T], ABC):
-    instance: T = None
-    container: "BaseContainer"
-    resolve_status: ResolveStatus = ResolveStatus.NONE
+
+    def __init__(self, container: "BaseContainer", instance: T = None):
+        self.container = container
+        self.instance = instance
+        self.resolve_status: ResolveStatus = ResolveStatus.NONE if not self.instance else ResolveStatus.RESOLVED
 
     @abstractmethod
     def resolve(self, token: InjectionToken = None, scope: InjectionScope = None, optional: bool = False) -> T:

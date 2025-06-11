@@ -7,7 +7,6 @@ D = TypeVar('D', bound=DataSet)
 
 
 class DataSource(Generic[D], ABC):
-    connected: bool = False
 
     @abstractmethod
     def connect(self, **args) -> None:

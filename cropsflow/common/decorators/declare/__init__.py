@@ -21,7 +21,7 @@ def declare(token: InjectionToken, dependency: Type[any], export: bool = False) 
         setattr(cls, DECORATOR_WATERMARKS, watermarks)
         declarations = getattr(cls, DECLARATIONS_ANNOTATION_KEY, [])
         declarations.append(DeclarationDecoratorMetaData(token=token, dependency=dependency, export=export))
-        setattr(cls, DECLARATIONS_ANNOTATION_KEY, declarations)
+        setattr(cls, DECLARATIONS_ANNOTATION_KEY, [_ for _ in declarations if _ is not None])
         return cls
 
     return decorator

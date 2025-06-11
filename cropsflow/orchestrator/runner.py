@@ -26,14 +26,6 @@ class RunnerFlag(Enum):
 
 
 class Runner(Generic[I], ABC):
-    parent: 'Runner' = None
-    node: PlaybookNode
-    async_runners: List["Runner"] = []
-    sync_runners: deque["Runner"] = deque()
-    flag: BehaviorSubject[RunnerFlag] = BehaviorSubject(RunnerFlag.READY)
-    instance: I = None
-    context: TaskContext = None
-    stopped: bool = False
 
     @property
     def container_metadata(self) -> DecoratorMetaData:
@@ -44,14 +36,14 @@ class Runner(Generic[I], ABC):
         return inspect.getfile(self.container_metadata.target)
 
     def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
-        self.node = node
-        self.parent = parent
-        self.async_runners = []
-        self.sync_runners = deque()
-        self.flag = BehaviorSubject(RunnerFlag.READY)
-        self.instance = None
-        self.context = None
-        self.stopped = False
+        self.node: PlaybookNode = node
+        self.parent: 'Runner' = parent
+        self.async_runners: List["Runner"] = []
+        self.sync_runners: deque["Runner"] = deque()
+        self.flag: BehaviorSubject[RunnerFlag] = BehaviorSubject(RunnerFlag.READY)
+        self.instance: I = None
+        self.context: TaskContext = None
+        self.stopped: bool = False
 
     @abstractmethod
     async def run(self, context: TaskContext) -> None:
@@ -67,7 +59,6 @@ class Runner(Generic[I], ABC):
         for runner in self.sync_runners:
             runner.resume()
 
-    @classmethod
     async def run_queue(self, context: TaskContext) -> None:
         while len(self.sync_runners) and self.flag.value is RunnerFlag.RUNNING:
             while self.stopped:
@@ -132,11 +123,11 @@ class ActionRunner(Runner[Action]):
 
 
 class PipeRunner(Runner[Pipe]):
-    accumulator_pipe_runner: 'PipeRunner' = None
 
     def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
         super().__init__(node=node, parent=parent)
-        self.accumulator_pipe_runner = self.find_accumulator_pipe_runner(accumulator_pipe_id=self.node.accumulator_id)
+        self.accumulator_pipe_runner: 'PipeRunner' = self.find_accumulator_pipe_runner(
+            accumulator_pipe_id=self.node.accumulator_id)
 
     def find_accumulator_pipe_runner(self, accumulator_pipe_id: str = None) -> Optional["PipeRunner"]:
         parent: PipeRunner = self.parent

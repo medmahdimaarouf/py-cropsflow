@@ -11,16 +11,12 @@ from .workers_scheduler import WorkersScheduler
 
 @service(scope=InjectionScope.DEFAULT)
 class Orchestrator:
-    container: Container
-    pool: Dict[str, Worker] = {}
-    queue: WorkersQueue = WorkersQueue()
-    scheduler: WorkersScheduler = WorkersScheduler()
 
     def __init__(self, injector: Injector):
-        self.container = injector.container
-        self.pool = {}
-        self.queue = WorkersQueue()
-        self.scheduler = WorkersScheduler()
+        self.container: Container = injector.container
+        self.pool: Dict[str, Worker] = {}
+        self.queue: WorkersQueue = WorkersQueue()
+        self.scheduler: WorkersScheduler = WorkersScheduler()
 
     def create_worker(self, meta_type: Type) -> Worker:
         task: Container = self.container.get_task(meta_type)

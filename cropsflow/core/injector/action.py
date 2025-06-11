@@ -6,7 +6,7 @@ from cropsflow.common.abstracts import Action as BaseAction, Init
 
 
 class Action(Container):
-    def __int__(self, metadata: ActionDecoratorMetaData, host: Container):
+    def __init__(self, metadata: ActionDecoratorMetaData, host: Container):
         super().__init__(metadata=metadata, host=host)
 
     async def run(self, binding: Dict[str, Any] = {}):

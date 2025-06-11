@@ -12,14 +12,13 @@ from .application_options import ApplicationOptions
 
 
 class ApplicationPlatform(ABC):
-    application: Application = None
-    scanner = DependenciesScanner = None
 
     def __init__(self, **args):
-        self.application = Application(args=args)
-        self.scanner = DependenciesScanner(app=self.application)
+        self.application: Application = Application(args=args)
+        self.scanner: DependenciesScanner = DependenciesScanner(app=self.application)
 
-    async def init(self, module: Type[Any], options: ApplicationOptions = None, overrides: list[Type[any]] = []) -> Application:
+    async def init(self, module: Type[Any], options: ApplicationOptions = None,
+                   overrides: list[Type[any]] = []) -> Application:
 
         try:
             print("Initializing ...")
@@ -45,7 +44,8 @@ class ApplicationPlatform(ABC):
                 return None
 
     @abstractmethod
-    async def start(self, t: Type[Any], options: ApplicationOptions = ApplicationOptions(), args: list[str] = []) -> Application:
+    async def start(self, t: Type[Any], options: ApplicationOptions = ApplicationOptions(),
+                    args: list[str] = []) -> Application:
         pass
 
     def register(self, module: Union[ModuleDef, Type[Any]]) -> 'ApplicationFactory':

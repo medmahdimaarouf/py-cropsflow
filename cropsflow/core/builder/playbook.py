@@ -3,7 +3,8 @@ from enum import Enum
 from typing import Dict, List
 
 from cropsflow.common import DecoratorMetaDataType, DecoratorMetaData
-from cropsflow.common.constants import PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, PLAYBOOK_IS_ASYNC_OPTION_KEY, \
+from cropsflow.common.constants import PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, \
+    PLAYBOOK_IS_ASYNC_OPTION_KEY, \
     PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
 from ..injector import Container
 from ..parser import ParseNode, PlaybookParseNode
@@ -23,12 +24,6 @@ class EPlaybookNodeType(Enum):
 
 
 class PlaybookNode:
-    parent: 'PlaybookNode' = None
-    container: Container
-    options: Dict[str, any]
-    children: List['PlaybookNode'] = []
-    parse_node: PlaybookParseNode
-    type: EPlaybookNodeType
 
     @property
     def skippable(self) -> bool:
@@ -46,23 +41,25 @@ class PlaybookNode:
     def accumulator_accessor(self) -> str | None:
         return self.options.get(PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, None)
 
-    def __init__(self, parse_node: ParseNode, container: Container, options: Dict[str, any] = {}, parent: 'PlaybookNode' = None):
-        self.parent = parent
-        self.container = container
-        self.options = options
-        self.parse_node = parse_node
-        self.children = []
+    def __init__(self, parse_node: ParseNode, container: Container, options: Dict[str, any] = {},
+                 parent: 'PlaybookNode' = None):
+        self.parent: 'PlaybookNode' = parent
+        self.container: Container = container
+        self.options: Dict[str, any] = options
+        self.parse_node: PlaybookParseNode = parse_node
+        self.children: List['PlaybookNode'] = []
         if self.container.metadata.type == DecoratorMetaDataType.ACTION:
-            self.type = EPlaybookNodeType.ACTION
+            self.type: EPlaybookNodeType = EPlaybookNodeType.ACTION
         elif self.container.metadata.type == DecoratorMetaDataType.DATAPIPE:
-            self.type = EPlaybookNodeType.PIPE
+            self.type: EPlaybookNodeType = EPlaybookNodeType.PIPE
         elif self.container.metadata.type == DecoratorMetaDataType.TASK:
-            self.type = EPlaybookNodeType.ROOT
+            self.type: EPlaybookNodeType = EPlaybookNodeType.ROOT
         else:
             raise Exception(f'RunnerQueueException: {self.container.get_name()} is not a runnable dependency')
 
     def append(self, parse_node: ParseNode, container: Container, options: Dict[str, any]) -> 'PlaybookNode':
-        child_node: PlaybookNode = PlaybookNode(parse_node=parse_node, container=container, options=options, parent=self)
+        child_node: PlaybookNode = PlaybookNode(parse_node=parse_node, container=container, options=options,
+                                                parent=self)
         self.children.append(child_node)
         return child_node
 

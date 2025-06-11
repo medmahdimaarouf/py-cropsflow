@@ -1,4 +1,4 @@
-from typing import Generic
+from typing import Generic, final
 
 from cropsflow.common.decorators import *
 from cropsflow.common.utils import stringify_injection_token
@@ -10,6 +10,7 @@ from ..scanner.metadata_scanner import scan_factory_injects, scan_class_injects
 T = TypeVar('T')
 
 
+@final
 class NullInjector(BaseInjector):
     resolve_status = ResolveStatus.NONE
 
@@ -20,15 +21,10 @@ class NullInjector(BaseInjector):
             raise Exception(f'Null injector found for {stringify_injection_token(token)}')
 
 
-NULL_INJECTOR = NullInjector()
+NULL_INJECTOR = NullInjector(container=None)
 
 
 class Injector(Generic[T], BaseInjector[T]):
-
-    def __init__(self, container: BaseContainer = None, instance: T = None):
-        self.instance = instance
-        self.container = container
-        self.resolve_status = ResolveStatus.NONE if not self.instance else ResolveStatus.RESOLVED
 
     def resolve(self, token: InjectionToken = None, scope: InjectionScope = None, optional: bool = False) -> T:
         if token is None:

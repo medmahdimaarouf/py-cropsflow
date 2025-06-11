@@ -6,11 +6,14 @@ from cropsflow.common import service, InjectionScope
 
 @service(scope=InjectionScope.DEFAULT)
 class EventEmitter:
-    __channels: Dict[str, EventChannel] = {}
+
+    def __init__(self):
+        self.__channels: Dict[str, EventChannel] = {}
 
     def create_channel(self, channel_id: str, title: str, description: str = '') -> EventChannel:
         if channel_id.strip() not in self.__channels:
-            return self.__channels.setdefault(channel_id.strip(), EventChannel(id=channel_id.strip(), title=title, description=description))
+            return self.__channels.setdefault(channel_id.strip(),
+                                              EventChannel(id=channel_id.strip(), title=title, description=description))
         else:
             raise Exception(f"Channel with id '{channel_id.strip()}' is already existing")
 

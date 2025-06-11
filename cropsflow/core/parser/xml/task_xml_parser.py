@@ -8,10 +8,9 @@ from cropsflow.core.parser.task_parse_tree import TaskParseTree, PlaybookParseNo
 
 
 class XMLTaskTemplateParser:
-    template_file_name: str
 
     def __init__(self, template_file_name: str):
-        self.template_file_name = template_file_name
+        self.template_file_name: str = template_file_name
 
     def read_line(self, line: int):
         with open(self.template_file_name, "r") as file:
@@ -89,11 +88,13 @@ class XMLTaskTemplateParser:
                                                         children=[]
                                                         )
                     for playbook_element in child:
-                        parsed_playbook.children.append(self.parse_playbook_item(playbook_element=playbook_element, error_callback=error_callback))
+                        parsed_playbook.children.append(
+                            self.parse_playbook_item(playbook_element=playbook_element, error_callback=error_callback))
                 else:
-                    handle_error(TaskBuildException(message=f"Unknown tag '{child.tag}' found in <task>.", template_file_path=template_path, line=1))
+                    handle_error(TaskBuildException(message=f"Unknown tag '{child.tag}' found in <task>.",
+                                                    template_file_path=template_path, line=1))
 
-            return TaskParseTree(meta_data=parsed_metadata, playbook=parsed_playbook)
+            return TaskParseTree(metadata=parsed_metadata, playbook=parsed_playbook)
 
         except FileNotFoundError:
             return handle_error(
@@ -101,4 +102,5 @@ class XMLTaskTemplateParser:
             )
 
         except XMLSyntaxError as e:
-            return handle_error(ValueError(f"XML parsing template {template_path} error: {e.position[0], e.position[1]}"))
+            return handle_error(
+                ValueError(f"XML parsing template {template_path} error: {e.position[0], e.position[1]}"))
