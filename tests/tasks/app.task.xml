@@ -10,8 +10,13 @@
     </tags>
     <readme src="./readme.md"/>
     <playbook>
-        <raise-error>
-
-        </raise-error>
+        <map>
+            <mock-value accumulator-accessor="v2"/>
+            <mock-value accumulator-accessor="v1"/>
+            <map accumulator-accessor="other">
+                <mock-value accumulator-accessor="v12"/>
+                <mock-value accumulator-accessor="v21"/>
+            </map>
+        </map>
     </playbook>
 </task>

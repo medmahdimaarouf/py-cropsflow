@@ -2,7 +2,8 @@ from inspect import signature, Parameter
 from typing import Type, Any, List, Dict, Callable
 from cropsflow.common.constants import *
 from cropsflow.common.decorators import ModuleDecoratorMetaData, ActionDecoratorMetaData, DataPipeDecoratorMetaData, \
-    ServiceDecoratorMetaData, TaskDecoratorMetaData, InjectionScope, InjectMetaData, FactoryProviderMetaData, DecoratorMetaDataType
+    ServiceDecoratorMetaData, TaskDecoratorMetaData, InjectionScope, InjectMetaData, FactoryProviderMetaData, \
+    DecoratorMetaDataType
 from cropsflow.common.decorators.option import Option
 
 
@@ -30,7 +31,7 @@ def scanModuleMetaData(meta_type: Type[Any]) -> ModuleDecoratorMetaData:
 def scanActionMetaData(meta_type: Type[Any]) -> ActionDecoratorMetaData:
     if isDecorated(meta_type, ACTION_WATERMARK):
         return ActionDecoratorMetaData(target=meta_type, selector=getattr(meta_type, ACTION_DECORATOR_SELECTOR_KEY, ""),
-                                       auto_next=getattr(meta_type, ACTION_DECORATOR_AUTO_NEXT_KEY, False), type=DecoratorMetaDataType.ACTION)
+                                       auto_next=getattr(meta_type, ACTION_DECORATOR_AUTO_NEXT_KEY, False))
     else:
         raise Exception(meta_type.__name__ + " is not an @Action")
 
@@ -38,21 +39,25 @@ def scanActionMetaData(meta_type: Type[Any]) -> ActionDecoratorMetaData:
 def scanDataPipeMetaData(meta_type: Type[Any]) -> DataPipeDecoratorMetaData:
     if isDecorated(meta_type, PIPE_WATERMARK):
         return DataPipeDecoratorMetaData(target=meta_type,
-                                         selector=getattr(meta_type, DATAPIPE_DECORATOR_SELECTOR_KEY, ""), type=DecoratorMetaDataType.DATAPIPE)
+                                         selector=getattr(meta_type, DATAPIPE_DECORATOR_SELECTOR_KEY, ""),
+                                         type=DecoratorMetaDataType.DATAPIPE)
     else:
         raise Exception(meta_type.__name__ + " is not a @DataPipe")
 
 
 def scanServiceMetaData(meta_type: Type[Any]) -> ServiceDecoratorMetaData:
     if isDecorated(meta_type, INJECTABLE_WATERMARK):
-        return ServiceDecoratorMetaData(target=meta_type, scope=getattr(meta_type, INJECTABLE_DECORATOR_INJECTION_SCOPE_KEY, InjectionScope.DEFAULT))
+        return ServiceDecoratorMetaData(target=meta_type,
+                                        scope=getattr(meta_type, INJECTABLE_DECORATOR_INJECTION_SCOPE_KEY,
+                                                      InjectionScope.DEFAULT))
     else:
         raise Exception(meta_type.__name__ + " is not a @Service")
 
 
 def scanTaskMetaData(meta_type: Type[Any]) -> TaskDecoratorMetaData:
     if isDecorated(meta_type, TASK_WATERMARK):
-        return TaskDecoratorMetaData(target=meta_type, template=getattr(meta_type, TASK_DECORATOR_TEMPLATE_URI_KEY, ""), type=DecoratorMetaDataType.TASK)
+        return TaskDecoratorMetaData(target=meta_type, template=getattr(meta_type, TASK_DECORATOR_TEMPLATE_URI_KEY, ""),
+                                     type=DecoratorMetaDataType.TASK)
     else:
         raise Exception(meta_type.__name__ + " is not a @Task")
 
@@ -67,7 +72,8 @@ def scan_class_injects(cls: Type[Any], cls_method: Callable = None) -> Dict[str,
         if injects.get(parameter_name) is None:
             # If no InjectMetaData is provided, fall back to the type annotation
             if parameter.annotation is not Parameter.empty:
-                injects[parameter_name] = InjectMetaData(token=parameter.annotation, scope=InjectionScope.DEFAULT, optional=False)
+                injects[parameter_name] = InjectMetaData(token=parameter.annotation, scope=InjectionScope.DEFAULT,
+                                                         optional=False)
             elif cls_method == cls.__init__:
                 raise ValueError(
                     f"Cannot scan inject metadata for argument '{parameter_name}' in class '{cls.__name__}'")
@@ -86,7 +92,8 @@ def scan_factory_injects(meta_data: FactoryProviderMetaData) -> Dict[str, Inject
         if injects.get(parameter_name) is None:
             # If no InjectMetaData is provided, fall back to the type annotation
             if parameter.annotation is not Parameter.empty:
-                injects[parameter_name] = InjectMetaData(token=parameter.annotation, scope=InjectionScope.DEFAULT, optional=False)
+                injects[parameter_name] = InjectMetaData(token=parameter.annotation, scope=InjectionScope.DEFAULT,
+                                                         optional=False)
             else:
                 raise ValueError(
                     f"Cannot scan inject metadata for argument '{parameter_name}' in factory provider '{meta_data.use_factory.__name__}'")
