@@ -1,3 +1,23 @@
+"""
+Module: lifecycle.py
+
+This module defines abstract base classes for lifecycle management interfaces:
+`Init` and `Destroy`.
+
+These interfaces are intended to be implemented by classes that require explicit
+initialization and cleanup logic. They are useful in dependency-injection systems,
+task execution frameworks, or any architecture where controlled resource management
+is necessary.
+
+Classes:
+    - Init: Defines the `init` method for setup or configuration procedures.
+    - Destroy: Defines the `destroy` method for cleanup or teardown procedures.
+
+Usage:
+    Implement `Init` when your class needs a configurable initialization step.
+    Implement `Destroy` when your class needs to release resources or clean up after execution.
+"""
+
 from abc import ABC, abstractmethod
 
 
@@ -17,7 +37,6 @@ class Init(ABC):
         Args:
             **args: Arbitrary keyword arguments for initialization configuration.
         """
-        pass
 
 
 class Destroy(ABC):
@@ -36,4 +55,3 @@ class Destroy(ABC):
         Args:
             **args: Arbitrary keyword arguments for destruction configuration.
         """
-        pass

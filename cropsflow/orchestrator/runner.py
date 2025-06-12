@@ -175,7 +175,7 @@ class PlayBookRunner(Runner[object]):
             self.flag.next(RunnerFlag.COMPLETED)
             self.destroy()
         except RunnerException as e:
-            print(f"Playbook : {self.node.parse_node.template_file_name}:{self.node.parse_node.line}", " error : ",
+            print(f"Playbook: {self.node.parse_node.template_file_name}:{self.node.parse_node.line}", " error : ",
                   e.__str__())
             # e.print_partial_traceback()
             traceback.print_exception(e)

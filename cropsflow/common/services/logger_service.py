@@ -1,6 +1,10 @@
+"""
+Logger service implementation.
+"""
+
 from ..decorators import service, InjectionScope
 
 
 @service(scope=InjectionScope.DEFAULT)
 class Logger:
-    pass
+    """A simple logger service."""

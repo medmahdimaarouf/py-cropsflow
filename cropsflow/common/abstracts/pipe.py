@@ -1,3 +1,23 @@
+"""
+This module defines the abstract base class `Pipe` for data processing within a task execution framework.
+
+A `Pipe` serves as a generic and reusable component designed to accumulate and manage data throughout
+the lifecycle of a task. It provides a standardized interface for processing data via the abstract
+`accumulate` method, which must be implemented by subclasses to define specific data aggregation logic.
+
+The pipe can hold an internal data state, which can be set and retrieved via the `set_data` and `get_data`
+methods, respectively. This design supports flexible data manipulation patterns in complex workflows,
+allowing subclasses to extend and customize how data is accumulated and accessed in different contexts.
+
+Key concepts:
+- Generic typing for flexible data types.
+- Integration with `TaskContext` for task-specific execution state.
+- Optional accessor support for nested or specific data retrieval.
+
+This abstraction is useful in systems that require modular, composable data processing pipelines,
+such as workflow engines, ETL processes, or reactive data streams.
+"""
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict, TypeVar, Generic, Optional
 
@@ -30,7 +50,7 @@ class Pipe(Generic[D], ABC):
     def accumulate(
             self,
             context: TaskContext,
-            options: Dict[str, Any] = {},
+            options: Dict[str, Any],
             data: D = None,
             accessor: str = None
     ) -> None:
@@ -45,7 +65,6 @@ class Pipe(Generic[D], ABC):
             data (D, optional): Additional data to be considered during accumulation.
             accessor (str, optional): Optional attribute path or key used for accessing sub-data.
         """
-        pass
 
     def set_data(self, data: D) -> None:
         """

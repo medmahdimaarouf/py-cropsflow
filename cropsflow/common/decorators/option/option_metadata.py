@@ -1,25 +1,42 @@
+"""
+Defines the Option class used to describe a configurable parameter
+for an action, including metadata such as type, default value, and description.
+"""
+
 from typing import Generic, TypeVar, Optional, List, Type
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 T = TypeVar('T')
 
 
-@dataclass
 class Option(Generic[T]):
-    key: str = field(default_factory=str)
-    default: T = None  # Optional to indicate it's not always required
-    meta_type: Type[T] = None  # Generic type
-    select: List[T] = None  # Optional list of generic type
-    name: str = ''
-    description: str = ''
-    required: bool = False
+    """
+    Describes a configurable option for an action.
 
-    def __init__(self, key: str, meta_type: Type[T], required: bool = False, default: T = None, name: str = '',
-                description: str = '', select: List[T] = None):
-        self.key = key.strip()
-        self.meta_type = meta_type
-        self.default = default
-        self.required = required
-        self.select = select
-        self.name = name.strip()
-        self.description = description.strip()
+    Attributes:
+        key (str): Unique key for the option.
+        meta_type (Type[T]): The expected type for the option value.
+        required (bool): Whether the option is required.
+        default (Optional[T]): Default value if not provided.
+        select (Optional[List[T]]): A list of allowed values (if any).
+        name (str): Display name for the option.
+        description (str): Description of the option.
+    """
+
+    def __init__(
+            self,
+            key: str,
+            meta_type: Type[T],
+            required: bool = False,
+            default: Optional[T] = None,
+            name: str = '',
+            description: str = '',
+            select: Optional[List[T]] = None
+    ):
+        self.key: str = key.strip()
+        self.meta_type: Type[T] = meta_type
+        self.required: bool = required
+        self.default: Optional[T] = default
+        self.select: Optional[List[T]] = select
+        self.name: str = name.strip()
+        self.description: str = description.strip()

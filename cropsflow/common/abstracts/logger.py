@@ -1,3 +1,22 @@
+"""
+Module: logger.py
+
+Defines the abstract base class `Logger` that specifies a standard interface
+for logging functionality across different log levels.
+
+This module provides an extensible framework for implementing custom loggers,
+ensuring consistent method signatures for logging general messages, warnings,
+errors, informational messages, and debug output.
+
+Classes:
+    Logger: Abstract base class declaring methods that must be implemented by
+            concrete logger classes to handle various logging levels.
+
+Usage:
+    Subclass `Logger` to create specific logging implementations suited to
+    different output formats, destinations, or logging frameworks.
+"""
+
 from abc import ABC, abstractmethod
 
 
@@ -18,7 +37,6 @@ class Logger(ABC):
             message (str): The message to log.
             *args: Additional arguments to include in the log.
         """
-        pass
 
     @abstractmethod
     def warning(self, message: str, *args) -> None:
@@ -29,7 +47,6 @@ class Logger(ABC):
             message (str): The warning message to log.
             *args: Additional arguments to include in the log.
         """
-        pass
 
     @abstractmethod
     def error(self, message: str, *args) -> None:
@@ -40,7 +57,6 @@ class Logger(ABC):
             message (str): The error message to log.
             *args: Additional arguments to include in the log.
         """
-        pass
 
     @abstractmethod
     def info(self, message: str, *args) -> None:
@@ -51,7 +67,6 @@ class Logger(ABC):
             message (str): The informational message to log.
             *args: Additional arguments to include in the log.
         """
-        pass
 
     @abstractmethod
     def debug(self, message: str, *args) -> None:
@@ -62,4 +77,3 @@ class Logger(ABC):
             message (str): The debug message to log.
             *args: Additional arguments to include in the log.
         """
-        pass

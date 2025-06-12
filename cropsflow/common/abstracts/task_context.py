@@ -1,3 +1,17 @@
+"""
+This module defines the TaskContext class, which encapsulates the execution context of a task.
+
+TaskContext manages hierarchical relationships between tasks through an optional parent context,
+provides a logger instance for recording task-related events, and holds arbitrary data relevant
+to the task's execution. This design facilitates structured task management and logging in complex
+systems where tasks may be nested or require shared contextual information.
+
+Attributes:
+    parent (Optional[TaskContext]): Reference to the parent task context, if any.
+    logger (Optional[Logger]): Logger instance for logging within the task's scope.
+    data (Any): Arbitrary data associated with the task, allowing flexible usage.
+"""
+
 from typing import Optional, Any
 from .logger import Logger
 

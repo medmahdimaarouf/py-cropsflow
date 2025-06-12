@@ -1,4 +1,21 @@
-# constants.py
+"""
+constants.py
+
+This module defines all internal constant keys used across decorators, metadata annotations,
+and configuration options for the Proxtractor framework. It centralizes the naming of
+watermarks, annotation keys, and option tags used for dependency injection, module
+declarations, task templates, and playbook execution behavior.
+
+Sections included:
+- Decorator watermark keys for marking injectable types, actions, modules, and pipes
+- Annotation keys for declarations and providers
+- Action and Pipe configuration constants
+- Task and template metadata keys
+- Playbook-specific syntax keywords and runtime flags
+- Resource and injection-related constants
+
+These constants ensure consistency and reduce the risk of typos in metadata usage across the system.
+"""
 
 # DECORATOR Type Key
 DECORATOR_WATERMARKS = "_watermarks_"

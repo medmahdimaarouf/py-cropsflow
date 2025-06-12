@@ -1,3 +1,21 @@
+"""
+Module: metrics.py
+
+Defines abstract and concrete classes for metric collection and representation.
+
+This module provides a flexible framework for defining metrics, including
+an abstract base class `Metric` for general metrics and a `GaugeMetric`
+subclass representing a thread-safe, settable numerical metric.
+
+Classes:
+    Metric: Abstract base class requiring implementation of a metric collection method.
+    GaugeMetric: Thread-safe metric holding a single numerical value that can be set and retrieved.
+
+Usage:
+    Extend `Metric` to implement specific metric types.
+    Use `GaugeMetric` for metrics representing numerical values that may be updated concurrently.
+"""
+
 import threading
 from abc import ABC, abstractmethod
 
@@ -35,7 +53,6 @@ class Metric(ABC):
         Returns:
             Any: The current metric value(s).
         """
-        pass
 
 
 class GaugeMetric(Metric, ABC):

@@ -1,3 +1,24 @@
+"""
+Module: event.py
+
+Defines the abstract base class `Event`, a generic dataclass that models
+an event with associated metadata and payload.
+
+This module provides a foundational structure for creating event objects
+with a consistent interface, including:
+
+- An event name to identify the event type or source.
+- A timestamp indicating when the event occurred or was recorded.
+- A generic data payload, allowing flexibility for different event content.
+
+The `Event` class is generic over the data type, making it adaptable to
+various use cases requiring strongly typed event data.
+
+Usage:
+    Subclass `Event` or instantiate it with a specific data type to represent
+    concrete events within an application or system.
+"""
+
 from abc import ABC
 from dataclasses import dataclass, field
 from datetime import datetime

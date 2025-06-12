@@ -1,3 +1,11 @@
+"""
+Defines metadata classes used for configuring dependency injection in modules,
+including support for class, factory, and value providers, as well as dynamic modules.
+
+This module is designed to support a modular DI system and includes data structures
+that facilitate metadata collection during module declaration and registration.
+"""
+
 from dataclasses import dataclass, field
 from typing import List, Any, Union, Type, Callable
 
@@ -5,43 +13,48 @@ from cropsflow.common.schemas.docorator_metadata import DecoratorMetaData
 from cropsflow.common.utils import InjectionToken
 
 
-@dataclass()
+@dataclass
 class ProviderMetaData:
+    """Base metadata for providers with a token key."""
     provide: InjectionToken = field(default_factory=str)
 
     def __init__(self, provide: InjectionToken):
         self.provide = provide
 
 
-@dataclass()
+@dataclass
 class ClassProviderMetaData(ProviderMetaData):
-    useClass: Type = field(default_factory=Type)
+    """Metadata for class-based providers."""
+    useClass: Type[Any] = field(default_factory=object)
 
-    def __init__(self, provide: InjectionToken, useClass: Type):
+    def __init__(self, provide: InjectionToken, useClass: Type[Any]):
         super().__init__(provide=provide)
         self.useClass = useClass
 
 
-@dataclass()
+@dataclass
 class FactoryProviderMetaData(ProviderMetaData):
-    use_factory: Callable = field(default_factory=Callable)
+    """Metadata for factory-based providers."""
+    use_factory: Callable = field(default_factory=lambda: None)
 
     def __init__(self, provide: InjectionToken, use_factory: Callable):
         super().__init__(provide=provide)
         self.use_factory = use_factory
 
 
-@dataclass()
+@dataclass
 class ValueProviderMetaData(ProviderMetaData):
-    use_value: Any = field(default_factory=any)
+    """Metadata for value-based providers."""
+    use_value: Any = field(default=None)
 
     def __init__(self, provide: InjectionToken, use_value: Any):
         super().__init__(provide=provide)
         self.use_value = use_value
 
 
-@dataclass()
+@dataclass
 class ExistsProvider(ProviderMetaData):
+    """Metadata for existing providers (aliases)."""
     use_exists: InjectionToken = field(default_factory=str)
 
     def __init__(self, provide: InjectionToken, use_exists: InjectionToken):
@@ -49,16 +62,22 @@ class ExistsProvider(ProviderMetaData):
         self.use_exists = use_exists
 
 
-ProviderDef = Union[Type, ProviderMetaData]
+ProviderDef = Union[Type[Any], ProviderMetaData]
 
 
-@dataclass()
+@dataclass
 class DynamicModule:
+    """Represents a dynamic module with runtime-registered providers."""
+    module: Type[Any] = field(default_factory=object)
     providers: List[ProviderDef] = field(default_factory=list)
-    module: Type[Any] = field(default_factory=Type)
-    is_global: bool = field(default_factory=bool)
+    is_global: bool = field(default=False)
 
-    def __init__(self, module: Type[Any], providers: List[ProviderDef], is_global: bool = False):
+    def __init__(
+            self,
+            module: Type[Any],
+            providers: List[ProviderDef],
+            is_global: bool = False
+    ):
         self.module = module
         self.providers = providers
         self.is_global = is_global
@@ -67,17 +86,24 @@ class DynamicModule:
 ModuleDef = Union[Type[Any], DynamicModule, Callable]
 
 
-@dataclass()
+@dataclass
 class ModuleDecoratorMetaData(DecoratorMetaData):
-    declarations: [Type[Any]] = field(default_factory=list)
+    """Metadata for the @Module decorator."""
+    declarations: List[Type[Any]] = field(default_factory=list)
     imports: List[ModuleDef] = field(default_factory=list)
     providers: List[ProviderDef] = field(default_factory=list)
     exports: List[InjectionToken] = field(default_factory=list)
 
-    def __init__(self, target: Type[Any], declarations: List[Type[Any]] = [], imports: List[ModuleDef] = [],
-                 providers: List[ProviderDef] = [], exports: List[InjectionToken] = []):
+    def __init__(
+            self,
+            target: Type[Any],
+            declarations: List[Type[Any]] = None,
+            imports: List[ModuleDef] = None,
+            providers: List[ProviderDef] = None,
+            exports: List[InjectionToken] = None
+    ):
         self.target = target
-        self.declarations = declarations
-        self.imports = imports
-        self.providers = providers
-        self.exports = exports
+        self.declarations = declarations or []
+        self.imports = imports or []
+        self.providers = providers or []
+        self.exports = exports or []

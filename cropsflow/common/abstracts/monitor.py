@@ -1,3 +1,17 @@
+"""
+Module: monitor.py
+
+Defines the Monitor class responsible for managing and tracking named metrics.
+
+The Monitor class provides functionality to register, retrieve, and check
+metrics identified by unique string names. It acts as a container for multiple
+Metric instances, allowing centralized access and management.
+
+Classes:
+    Monitor: Manages a collection of named Metric instances, ensuring uniqueness and
+             providing query and retrieval capabilities.
+"""
+
 from typing import Dict
 from .metric import Metric
 
@@ -39,7 +53,7 @@ class Monitor:
         if key not in self.metrix:
             self.metrix[key] = metric
             return metric
-        raise Exception(f"Unable to add metric: metric name '{key}' already exists")
+        raise ValueError(f"Unable to add metric: metric name '{key}' already exists")
 
     def get_metric(self, name: str) -> Metric | None:
         """
