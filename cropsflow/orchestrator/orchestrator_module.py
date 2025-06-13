@@ -1,6 +1,6 @@
 from cropsflow.common import Init
 from cropsflow.common.decorators import module, inject
-from cropsflow.platforms import Application
+from cropsflow.core.application import Application
 from cropsflow.router import Router
 from .orchestrator import Orchestrator
 from .routes import *

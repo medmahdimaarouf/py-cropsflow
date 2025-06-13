@@ -1,7 +1,7 @@
 from cropsflow.common import CommonModule, Init
 from cropsflow.common.decorators import module, inject, FactoryProviderMetaData, ValueProviderMetaData
 from tests.common.actions import RaiseErrorAction
-from tests.tasks import AppTask, MockValuePipe
+from tests.tasks import AppTask, MockValuePipe, CheckValuePipe
 
 
 @inject(arg_name='v', token='p1')
@@ -10,7 +10,7 @@ def provider_function(v: int) -> str:
 
 
 @module(
-    declarations=[AppTask, RaiseErrorAction, MockValuePipe],
+    declarations=[AppTask, RaiseErrorAction, MockValuePipe, CheckValuePipe],
     imports=[CommonModule],
     providers=[
         ValueProviderMetaData(provide="p1", use_value=1),

@@ -3,7 +3,6 @@ from typing import Generic, final
 from cropsflow.common.decorators import *
 from cropsflow.common.utils import stringify_injection_token
 from ..abstracts import BaseInjector, ResolveStatus
-from ..abstracts.container import BaseContainer
 from ..exceptions import CircularDependenciesException
 from ..scanner.metadata_scanner import scan_factory_injects, scan_class_injects
 
@@ -35,7 +34,11 @@ class Injector(Generic[T], BaseInjector[T]):
                 else:
                     self.instance = self.resolve_instance(self.container.metadata)
                 self.resolve_status = ResolveStatus.RESOLVED
-            return self.instance
+
+            if scope is InjectionScope.TRANSIENT:
+                return self.resolve_instance(self.container.metadata)
+            else:
+                return self.instance
         else:
             injector = self.container.get(token=token)
             if injector == NULL_INJECTOR:

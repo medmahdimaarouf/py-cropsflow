@@ -4,11 +4,12 @@ from typing import Type, Any
 import uvicorn
 from fastapi import FastAPI
 
+from core.application import Application
 from cropsflow.data import DataModule
 from cropsflow.events import EventsModule
 from cropsflow.monitoring import MonitoringModule
 from cropsflow.orchestrator import OrchestratorModule
-from cropsflow.platforms import ApplicationPlatform, Application
+from cropsflow.platforms import ApplicationPlatform
 from cropsflow.router import RouterModule
 from .platform_options import PlatformOptions
 from .routes import get_api_router

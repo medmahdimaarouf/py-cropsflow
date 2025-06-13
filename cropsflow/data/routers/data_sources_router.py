@@ -1,5 +1,5 @@
 from cropsflow.router import Router
-from cropsflow.platforms.application import Application
+from core.application import Application
 
 
 def get_data_sources_router(application: Application) -> Router:

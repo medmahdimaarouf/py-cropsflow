@@ -1,6 +1,6 @@
 from .get_modules_router import get_modules_router
 from cropsflow.router import Router
-from cropsflow.platforms import Application
+from cropsflow.core.application import Application
 
 
 def get_inspector_router(application: Application) -> Router:

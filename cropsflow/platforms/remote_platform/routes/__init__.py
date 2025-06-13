@@ -1,4 +1,4 @@
-from cropsflow.platforms import Application
+from cropsflow.core.application import Application
 from cropsflow.router import Router
 from .inspector import get_inspector_router
 

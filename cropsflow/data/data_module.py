@@ -1,7 +1,7 @@
 from cropsflow.common import Init
 from cropsflow.common.decorators import module, inject
 from cropsflow.router import Router
-from cropsflow.platforms import Application
+from cropsflow.core.application import Application
 from .data_sources_register import DataSourcesRegister
 from .routers import get_data_sources_router
 

@@ -10,13 +10,21 @@
     </tags>
     <readme src="./readme.md"/>
     <playbook>
-        <map>
-            <mock-value accumulator-accessor="v2"/>
-            <mock-value accumulator-accessor="v1"/>
-            <map accumulator-accessor="other">
-                <mock-value accumulator-accessor="v12"/>
-                <mock-value accumulator-accessor="v21"/>
+        <check-value>
+            <map>
+                <mock-value accumulator-accessor="field1"/>
+                <mock-value accumulator-accessor="field2"/>
+                <map accumulator-accessor="map">
+                    <mock-value accumulator-accessor="map_field1"/>
+                    <mock-value accumulator-accessor="map_field2"/>
+                    <list accumulator-accessor="list">
+                        <map>
+                            <mock-value accumulator-accessor="list_f1"/>
+                            <mock-value accumulator-accessor="list_f2"/>
+                        </map>
+                    </list>
+                </map>
             </map>
-        </map>
+        </check-value>
     </playbook>
 </task>

@@ -1,8 +1,9 @@
+import asyncio
+
 from app_module import AppModule
 from cropsflow.orchestrator import Worker
-from cropsflow.platforms import CropsFlow, CropsFlowRemote
+from cropsflow.platforms import CropsFlow
 from tests.tasks.app_task import AppTask
-import asyncio
 
 
 async def start():

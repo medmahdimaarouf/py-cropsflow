@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from cropsflow.platforms import ApplicationOptions
+from cropsflow.core.application_options import ApplicationOptions
 
 
 @dataclass

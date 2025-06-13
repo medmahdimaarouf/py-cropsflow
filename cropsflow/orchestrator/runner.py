@@ -4,7 +4,7 @@ import traceback
 from abc import abstractmethod, ABC
 from asyncio import sleep
 from collections import deque
-from copy import copy
+from copy import deepcopy
 from enum import Enum
 from typing import List, TypeVar, Generic, Callable, Optional, cast
 
@@ -66,9 +66,9 @@ class Runner(Generic[I], ABC):
             runner = self.sync_runners.popleft()
             if runner.node.is_async:
                 self.async_runners.append(runner)
-                runner.run(context=copy(context))
+                runner.run(context=deepcopy(context))
             else:
-                await runner.run(context=copy(context))
+                await runner.run(context=deepcopy(context))
 
             if runner.flag.value is RunnerFlag.ERROR:
                 self.flag.next(RunnerFlag.ERROR)
@@ -105,7 +105,7 @@ class ActionRunner(Runner[Action]):
             is_auto_next: bool = cast(ActionDecoratorMetaData, self.node.container.metadata).auto_next
 
             self.instance.next_callback: Callable[[TaskContext], None] = next_callback if not is_auto_next else None
-            next_context = await self.instance.run(context=copy(context), options=self.node.options)
+            next_context = await self.instance.run(context=deepcopy(context), options=self.node.options)
             '''
             @todo some instances doesn't return context , None instead is returned -> rais clear exception and log
             '''
