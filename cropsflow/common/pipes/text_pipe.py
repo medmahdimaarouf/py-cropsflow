@@ -25,4 +25,4 @@ class TextPipe(Pipe[str]):
             data: str = None,
             accessor: str = None
     ) -> None:
-        self.set_data(data=options.get('value', data))
+        self._data = options.get('value', data)

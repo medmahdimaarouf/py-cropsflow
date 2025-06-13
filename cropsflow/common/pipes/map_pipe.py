@@ -38,6 +38,6 @@ class MapPipe(Pipe[Dict[str, Any]]):
             Exception: If the accessor is None or an empty string.
         """
         if accessor:
-            self.get_data().setdefault(accessor, data)
+            self._data.setdefault(accessor, data)
         else:
             raise ValueError("MapPipe requires a non-empty string accessor.")

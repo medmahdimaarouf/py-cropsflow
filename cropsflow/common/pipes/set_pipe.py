@@ -33,4 +33,4 @@ class SetPipe(Pipe[Set[Any]]):
             data (Any): The data to add to the set.
             accessor (str): Optional accessor (unused).
         """
-        self.get_data().add(data)
+        self._data.add(data)

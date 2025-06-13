@@ -17,6 +17,6 @@ class MonitorGetMetricPipe(Pipe):
         metric_name: str = options.get('name')
         metric: Metric = self.monitor.get_metric(metric_name.strip())
         if metric is not None:
-            self.set_data(data=metric.collect())
+            self.data = metric.collect()
         else:
-            self.set_data(None)
+            self.data = None

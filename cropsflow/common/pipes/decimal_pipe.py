@@ -38,4 +38,4 @@ class DecimalPipe(Pipe[float]):
             data (float, optional): Fallback data if 'value' is not in options.
             accessor (str, optional): Unused in this implementation.
         """
-        self.set_data(data=options.get('value', data))
+        self._data = options.get('value', data)

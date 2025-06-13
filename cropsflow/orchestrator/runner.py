@@ -75,7 +75,7 @@ class Runner(Generic[I], ABC):
         gc.collect()
 
     def init(self, context: TaskContext = None, **args) -> None:
-        self.instance = self.node.container.injector.resolve(scope=InjectionScope.DEFAULT, optional=False)
+        self.instance = self.node.container.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
         self.context = context
         if isinstance(self.instance, Init):
             self.instance.init(args)

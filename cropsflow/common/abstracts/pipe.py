@@ -19,6 +19,7 @@ such as workflow engines, ETL processes, or reactive data streams.
 """
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Dict, TypeVar, Generic, Optional
 
 from .task_context import TaskContext
@@ -34,7 +35,7 @@ class Pipe(Generic[D], ABC):
     during a task's lifecycle, with support for setting and retrieving the underlying data.
 
     Attributes:
-        data (Optional[D]): The internal data carried by the pipe.
+        _data (Optional[D]): The internal data carried by the pipe.
     """
 
     def __init__(self, data: D = None):
@@ -44,7 +45,7 @@ class Pipe(Generic[D], ABC):
         Args:
             data (D, optional): The initial data to assign to the pipe.
         """
-        self.data: Optional[D] = data
+        self._data: Optional[D] = data
 
     @abstractmethod
     def accumulate(
@@ -66,15 +67,6 @@ class Pipe(Generic[D], ABC):
             accessor (str, optional): Optional attribute path or key used for accessing sub-data.
         """
 
-    def set_data(self, data: D) -> None:
-        """
-        Set the internal data of the pipe.
-
-        Args:
-            data (D): The data to be set.
-        """
-        self.data = data
-
     def get_data(self) -> D:
         """
         Retrieve the current internal data of the pipe.
@@ -82,4 +74,4 @@ class Pipe(Generic[D], ABC):
         Returns:
             D: The stored data.
         """
-        return self.data
+        return deepcopy(self._data)

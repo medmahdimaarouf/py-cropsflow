@@ -33,4 +33,4 @@ class ListPipe(Pipe[List[Any]]):
             data (Any): The value to append.
             accessor (str, optional): Unused in this implementation.
         """
-        self.get_data().append(data)
+        self._data.append(data)

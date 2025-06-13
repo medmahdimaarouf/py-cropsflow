@@ -38,4 +38,4 @@ class IntegerPipe(Pipe[int]):
             data (int, optional): Fallback data if 'value' is not in options.
             accessor (str, optional): Not used in this implementation.
         """
-        self.set_data(data=options.get('value', data))
+        self._data = options.get('value', data)
