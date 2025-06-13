@@ -4,7 +4,7 @@ from typing import Type, Any
 import uvicorn
 from fastapi import FastAPI
 
-from core.application import Application
+from cropsflow.core.application import Application
 from cropsflow.data import DataModule
 from cropsflow.events import EventsModule
 from cropsflow.monitoring import MonitoringModule

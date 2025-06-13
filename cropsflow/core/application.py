@@ -12,15 +12,12 @@ from .scanner.metadata_scanner import scanServiceMetaData
 
 @service(scope=InjectionScope.DEFAULT)
 class Application(Container):
-    modules: Dict[InjectionToken, Module] = {}
-    tasks: Dict[InjectionToken, Any] = {}
-    groups: Dict[InjectionToken, Any] = {}
-    global_modules: Dict[InjectionToken, Module] = {}
-    args: list[str] = []
-
     def __init__(self, args: list[str] = []):
         super().__init__(metadata=scanServiceMetaData(Application), instance=self, host=None)
         self.args = args
+        self.modules: Dict[InjectionToken, Module] = {}
+        self.tasks: Dict[InjectionToken, Any] = {}
+        self.global_modules: Dict[InjectionToken, Module] = {}
         from .scanner.dependency_scanner import DependenciesScanner
         self.scanner: DependenciesScanner = DependenciesScanner(app=self)
         self.register_core_provider(token=Application, instance=self)
@@ -61,7 +58,7 @@ class Application(Container):
         for module in self.modules.values():
             for dep in module.deps.values():
                 dep.injector.resolve(scope=InjectionScope.DEFAULT)
-            dep.injector.resolve(scope=InjectionScope.DEFAULT)
+                dep.injector.resolve(scope=InjectionScope.DEFAULT)
 
     async def bootstrap(self, module: ModuleDef, overrides: list[any] = None):
         self.scanner.scan_modules(dep=module, overrides=overrides or [])

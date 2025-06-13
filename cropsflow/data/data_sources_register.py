@@ -1,8 +1,7 @@
 import asyncio
-import uuid
 
-from .abstracts.data_source import DataSource
 from cropsflow.common.decorators import service, InjectionScope
+from .abstracts.data_source import DataSource
 
 
 @service(scope=InjectionScope.DEFAULT)

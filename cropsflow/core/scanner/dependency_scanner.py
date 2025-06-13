@@ -3,7 +3,7 @@ from typing import Union
 
 from cropsflow.common.decorators import DynamicModule, ProviderMetaData, ModuleDef
 from cropsflow.common.utils import stringify_injection_token, InjectionToken
-from core.application import Application
+from ..application import Application
 from ..injector.module import Module
 from ..scanner.dependency_wrapper import DependencyWrap
 from ..scanner.metadata_scanner import *
@@ -109,19 +109,17 @@ class DependenciesScanner:
 
         module.exposed = True
 
-    ################################################################
-
     def register_module(self, module_metadata: ModuleDecoratorMetaData, dynamic: bool = False,
                         is_global: bool = False) -> DependencyWrap:
         token = module_metadata.target if not dynamic else generate_token(module_metadata)
         module = self.app.modules.get(module_metadata.target)
         exists = module is not None
         if dynamic or not exists:
-            module = self.app.modules[token] = Module(metadata=module_metadata, host=self.app)
+            module = self.app.modules.setdefault(token, Module(metadata=module_metadata, host=self.app))
             module.is_global = is_global
             if is_global:
                 if self.app.global_modules.get(token) is None:
-                    self.app.global_modules[token] = module
+                    self.app.global_modules.setdefault(token, module)
                 else:
                     raise Exception(f'Duplicated global module {module.metadata.target.__name__}')
 
@@ -136,7 +134,7 @@ class DependenciesScanner:
 
     def register_task(self, metadata: TaskDecoratorMetaData, module: Module):
         task = module.register_task(metadata=metadata)
-        self.app.tasks[metadata.target] = task
+        self.app.tasks.setdefault(metadata.target, task)
 
     def get_task(self, token: InjectionToken) -> Any:
         return self.app.tasks.get(token)

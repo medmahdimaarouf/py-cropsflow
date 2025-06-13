@@ -5,8 +5,8 @@ from cropsflow.events import EventsModule
 from cropsflow.monitoring import MonitoringModule
 from cropsflow.router import RouterModule
 
-from core.application import Application
-from core.application_options import ApplicationOptions
+from cropsflow.core.application import Application
+from cropsflow.core.application_options import ApplicationOptions
 from .application_platform import ApplicationPlatform
 from ..orchestrator import OrchestratorModule
 

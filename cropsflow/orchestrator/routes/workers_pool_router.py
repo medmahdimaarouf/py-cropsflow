@@ -1,5 +1,5 @@
 from cropsflow.router import Router
-from core.application import Application
+from cropsflow.core.application import Application
 
 
 def get_workers_pool_router(application: Application) -> Router:
