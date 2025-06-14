@@ -17,13 +17,7 @@ class SetPipe(Pipe[Set[Any]]):
     def __init__(self):
         super().__init__(data=set())
 
-    def accumulate(
-            self,
-            context: TaskContext,
-            options: Dict[str, Any],
-            data: Any = None,
-            accessor: str = None
-    ) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         """
         Adds a unique data value to the set.
 

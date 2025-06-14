@@ -6,6 +6,7 @@ from options or fallback data within a task context.
 from typing import Dict, Any
 
 from ..abstracts import Pipe, TaskContext
+from ..abstracts.pipe import D
 from ..decorators import pipe, option
 
 
@@ -22,13 +23,7 @@ class IntegerPipe(Pipe[int]):
     def __init__(self):
         super().__init__(data=None)
 
-    def accumulate(
-            self,
-            context: TaskContext,
-            options: Dict[str, Any],
-            data: int = None,
-            accessor: str = None
-    ) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         """
         Accumulates an integer value from options or falls back to provided data.
 

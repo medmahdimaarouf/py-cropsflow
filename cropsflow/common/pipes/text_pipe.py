@@ -18,11 +18,5 @@ class TextPipe(Pipe[str]):
     def __init__(self):
         super().__init__(data=None)
 
-    def accumulate(
-            self,
-            context: TaskContext,
-            options: Dict[str, Any],
-            data: str = None,
-            accessor: str = None
-    ) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         self._data = options.get('value', data)

@@ -8,8 +8,9 @@ from copy import deepcopy
 from enum import Enum
 from typing import List, TypeVar, Generic, Callable, Optional, cast
 
-from cropsflow.common import TaskContext, ActionDecoratorMetaData, DecoratorMetaData, InjectionScope, Action, Init, \
-    Destroy, Pipe
+from cropsflow.common.abstracts import TaskContext, Action, Init, Destroy, Pipe, DataAction
+from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY
+from cropsflow.common.decorators import ActionDecoratorMetaData, DecoratorMetaData, InjectionScope
 from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
 from cropsflow.core.utils import BehaviorSubject
 from .exceptions import RunnerException
@@ -60,31 +61,54 @@ class Runner(Generic[I], ABC):
             runner.resume()
 
     async def run_queue(self, context: TaskContext) -> None:
-        while len(self.sync_runners) and self.flag.value is RunnerFlag.RUNNING:
-            while self.stopped:
-                await sleep(500)
-            runner = self.sync_runners.popleft()
-            if runner.node.is_async:
-                self.async_runners.append(runner)
-                runner.run(context=deepcopy(context))
-            else:
-                await runner.run(context=deepcopy(context))
+        if self.flag.value is RunnerFlag.RUNNING:
+            for child_node in self.node.children:
+                if child_node.type == EPlaybookNodeType.ACTION:
+                    self.sync_runners.append(ActionRunner(node=child_node, parent=self))
+                if child_node.type == EPlaybookNodeType.PIPE:
+                    self.sync_runners.append(PipeRunner(node=child_node, parent=self))
+            while len(self.sync_runners):
+                while self.stopped:
+                    await sleep(500)
+                runner = self.sync_runners.popleft()
+                if runner.node.is_async:
+                    self.async_runners.append(runner)
+                    runner.run(context=deepcopy(context))
+                else:
+                    await runner.run(context=deepcopy(context))
 
-            if runner.flag.value is RunnerFlag.ERROR:
-                self.flag.next(RunnerFlag.ERROR)
-        gc.collect()
+                if runner.flag.value is RunnerFlag.ERROR:
+                    self.flag.next(RunnerFlag.ERROR)
+            gc.collect()
+        else:
+            return context
 
     def init(self, context: TaskContext = None, **args) -> None:
         self.instance = self.node.container.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
         self.context = context
         if isinstance(self.instance, Init):
             self.instance.init(args)
-        for child_node in self.node.children:
-            if child_node.type == EPlaybookNodeType.ACTION:
-                self.sync_runners.append(ActionRunner(node=child_node, parent=self))
-            if child_node.type == EPlaybookNodeType.PIPE:
-                self.sync_runners.append(PipeRunner(node=child_node, parent=self))
         gc.collect()
+
+    def find_transformer_pipe_runner(self, transformer_pipe_id: str = None) -> Optional["PipeRunner"]:
+        parent: PipeRunner = self.parent
+        while parent:
+            if isinstance(parent, PipeRunner):
+                if transformer_pipe_id is None or parent.node.options.get("id") == transformer_pipe_id:
+                    return parent
+            else:
+                parent = parent.parent
+        if transformer_pipe_id is not None:
+            raise Exception(f'Could not locate target accumulator pipe with id {self.node.transformer_pipe_id}')
+        else:
+            return None
+
+    def transform(self):
+        if isinstance(self.instance, Pipe) or isinstance(self.instance, DataAction):
+            transformer_pipe_runner: "PipeRunner" = self.find_transformer_pipe_runner(
+                transformer_pipe_id=self.node.options.get(PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY))
+            if transformer_pipe_runner:
+                transformer_pipe_runner.instance.transform(data=self.instance.get_data(), options=self.node.options)
 
     def destroy(self, **args) -> None:
         if self.instance is not None and isinstance(self.instance, Destroy) and not self.is_async:
@@ -106,11 +130,11 @@ class ActionRunner(Runner[Action]):
 
             self.instance.next_callback: Callable[[TaskContext], None] = next_callback if not is_auto_next else None
             next_context = await self.instance.run(context=deepcopy(context), options=self.node.options)
-            '''
-            @todo some instances doesn't return context , None instead is returned -> rais clear exception and log
-            '''
             if is_auto_next:
+                if next_context is None:
+                    raise Exception(f"None context detected for a non auto-next action: {self.node.parse_node.line}")
                 await self.run_queue(context=next_context)
+            self.transform()
             self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed action {self.node.container.get_name()}")
         except Exception as e:
@@ -124,33 +148,13 @@ class ActionRunner(Runner[Action]):
 
 class PipeRunner(Runner[Pipe]):
 
-    def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
-        super().__init__(node=node, parent=parent)
-        self.accumulator_pipe_runner: 'PipeRunner' = self.find_accumulator_pipe_runner(
-            accumulator_pipe_id=self.node.accumulator_id)
-
-    def find_accumulator_pipe_runner(self, accumulator_pipe_id: str = None) -> Optional["PipeRunner"]:
-        parent: PipeRunner = self.parent
-        while parent:
-            if isinstance(parent, PipeRunner):
-                if accumulator_pipe_id is None or parent.node.options.get("id") == accumulator_pipe_id:
-                    return parent
-            else:
-                parent = parent.parent
-        if accumulator_pipe_id is not None:
-            raise Exception(f'Could not locate target accumulator pipe with id {self.node.accumulator_id}')
-        else:
-            return None
-
     async def run(self, context: TaskContext) -> None:
         self.flag.next(RunnerFlag.RUNNING)
         try:
             print(f"running pipe {self.node.container.get_name()} ...")
             self.init(context=context)
             await self.run_queue(context=context)
-            if self.accumulator_pipe_runner:
-                self.accumulator_pipe_runner.accumulate(data=self.instance.get_data(),
-                                                        accessor=self.node.accumulator_accessor)
+            self.transform()
             self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed pipe {self.node.container.get_name()}")
         except Exception as e:
@@ -160,9 +164,6 @@ class PipeRunner(Runner[Pipe]):
                 traceback.print_exception(e)
         finally:
             self.destroy()
-
-    def accumulate(self, data: any, accessor: str = None):
-        self.instance.accumulate(context=self.context, data=data, accessor=accessor, options=self.node.options)
 
 
 class PlayBookRunner(Runner[object]):

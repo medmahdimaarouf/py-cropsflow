@@ -1,22 +1,23 @@
 from typing import Dict, Any
 
-from cropsflow.common import Pipe, pipe, TaskContext, option, Metric
+from cropsflow.common import DataAction, action, TaskContext, option, Metric
 
-from ..monitor import Monitor
+from cropsflow.monitoring.monitor import Monitor
 
 
-@pipe(selector='monitor-get-metric-pipe')
+@action(selector='monitor-get-metric')
 @option(key='name', meta_type=str, required=True)
-class MonitorGetMetricPipe(Pipe):
+class MonitorGetMetricAction(DataAction[TaskContext, any]):
 
     def __init__(self, monitor: Monitor):
+        super().__init__(data=None)
         self.monitor: Monitor = monitor
 
-    def accumulate(self, context: TaskContext, options: Dict[str, Any] = {}, data: any = None,
-                   accessor: str = None) -> None:
+    async def run(self, context: TaskContext, options: Dict[str, Any]) -> TaskContext:
         metric_name: str = options.get('name')
         metric: Metric = self.monitor.get_metric(metric_name.strip())
         if metric is not None:
             self.data = metric.collect()
         else:
             self.data = None
+        return context

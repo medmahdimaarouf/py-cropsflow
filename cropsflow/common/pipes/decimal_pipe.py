@@ -6,6 +6,7 @@ within a task context. It extracts and sets a decimal value for downstream actio
 from typing import Dict, Any
 
 from ..abstracts import Pipe, TaskContext
+from ..abstracts.pipe import D
 from ..decorators import pipe, option
 
 
@@ -22,13 +23,7 @@ class DecimalPipe(Pipe[float]):
     def __init__(self):
         super().__init__(data=None)
 
-    def accumulate(
-            self,
-            context: TaskContext,
-            options: Dict[str, Any],
-            data: float = None,
-            accessor: str = None
-    ) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         """
         Accumulates a float value from options or falls back to provided data.
 

@@ -2,14 +2,14 @@ from enum import Enum
 from typing import Dict, List
 
 from cropsflow.common import DecoratorMetaDataType
-from cropsflow.common.constants import PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, \
+from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, \
     PLAYBOOK_IS_ASYNC_OPTION_KEY, \
     PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
 from ..injector import Container
 from ..parser import ParseNode, PlaybookParseNode
 
 PLAYBOOK_NODES_CORE_OPTIONS_KEYS = [
-    PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY,
+    PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY,
     PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY,
     PLAYBOOK_IS_ASYNC_OPTION_KEY,
     PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
@@ -33,8 +33,8 @@ class PlaybookNode:
         return self.options.get(PLAYBOOK_IS_ASYNC_OPTION_KEY, None) is True
 
     @property
-    def accumulator_id(self) -> str | None:
-        return self.options.get(PLAYBOOK_ACCUMULATOR_ID_OPTION_KEY, None)
+    def transformer_pipe_id(self) -> str | None:
+        return self.options.get(PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY, None)
 
     @property
     def accumulator_accessor(self) -> str | None:

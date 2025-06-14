@@ -48,13 +48,7 @@ class Pipe(Generic[D], ABC):
         self._data: Optional[D] = data
 
     @abstractmethod
-    def accumulate(
-            self,
-            context: TaskContext,
-            options: Dict[str, Any],
-            data: D = None,
-            accessor: str = None
-    ) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         """
         Abstract method to perform accumulation logic.
 

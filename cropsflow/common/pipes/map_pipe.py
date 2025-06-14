@@ -5,10 +5,13 @@ Defines a pipe that accumulates key-value pairs into a dictionary.
 from typing import Dict, Any
 
 from ..abstracts import Pipe, TaskContext
-from ..decorators import pipe
+from ..decorators import pipe, option
 
+
+# todo: pipe key should be validated by playbook not data transformation emitter
 
 @pipe(selector='map')
+@option(key='key', default='key', required=False)
 class MapPipe(Pipe[Dict[str, Any]]):
     """
     Pipe implementation that accumulates data into a dictionary
@@ -18,13 +21,7 @@ class MapPipe(Pipe[Dict[str, Any]]):
     def __init__(self):
         super().__init__(data={})
 
-    def accumulate(
-            self,
-            context: TaskContext,
-            data: Any,
-            accessor: str,
-            options: Dict[str, Any]
-    ) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         """
         Stores data under the specified accessor key in the internal dictionary.
 
@@ -37,7 +34,8 @@ class MapPipe(Pipe[Dict[str, Any]]):
         Raises:
             Exception: If the accessor is None or an empty string.
         """
-        if accessor:
-            self._data.setdefault(accessor, data)
+        key: str = options.get('key', None)
+        if key:
+            self._data.setdefault(key, data)
         else:
-            raise ValueError("MapPipe requires a non-empty string accessor.")
+            raise ValueError("MapPipe requires a non-empty string field key.")

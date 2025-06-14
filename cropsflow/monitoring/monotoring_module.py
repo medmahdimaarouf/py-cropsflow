@@ -4,14 +4,13 @@ This module defines the MonitoringModule which integrates system monitoring metr
 The module provides a Monitor service that tracks various system metrics such as CPU and RAM usage.
 It also exposes HTTP routes to retrieve the registered metrics.
 """
-
 from cropsflow.common import inject, DynamicModule, ValueProviderMetaData, InjectionToken, Init
 from cropsflow.common.decorators import module
 from cropsflow.router import Router
 from .config import MonitoringModuleConfig
 from .metrix import CPUGaugeMetric, RAMGaugeMetric
 from .monitor import Monitor
-from .pipes import MonitorGetMetricPipe
+from .actions import MonitorGetMetricAction
 
 MONITORING_MODULE_CONFIG_INJECTION_TOKEN: InjectionToken = '__monitoring_module_config_injection_token__'
 
@@ -21,9 +20,9 @@ MONITORING_MODULE_CONFIG_INJECTION_TOKEN: InjectionToken = '__monitoring_module_
         Monitor,
     ],
     declarations=[
-        MonitorGetMetricPipe
+        MonitorGetMetricAction
     ],
-    exports=[Monitor]
+    exports=[Monitor, MonitorGetMetricAction]
 )
 class MonitoringModule(Init):
     """
