@@ -10,7 +10,7 @@ from enum import Enum
 from typing import List, TypeVar, Generic, Callable, Optional, cast
 
 from cropsflow.common.abstracts import TaskContext, Action, Init, Destroy, Pipe, DataAction
-from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY, PLAYBOOK_RUNNER_CONTEXT_ID_KEY
+from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY, PLAYBOOK_RUNNER_OVERRIDE_CONTEXT_ID_KEY
 from cropsflow.common.decorators import ActionDecoratorMetaData, DecoratorMetaData, InjectionScope
 from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
 from cropsflow.core.utils import BehaviorSubject
@@ -84,9 +84,9 @@ class Runner(Generic[I], ABC):
         if isinstance(self.instance, Init):
             self.instance.init(args)
 
-        if self.node.options.get(PLAYBOOK_RUNNER_CONTEXT_ID_KEY, None) is not None:
+        if self.node.options.get(PLAYBOOK_RUNNER_OVERRIDE_CONTEXT_ID_KEY, None) is not None:
             self.context = deepcopy(
-                self.find_first_runner(runner_id=self.node.options.get(PLAYBOOK_RUNNER_CONTEXT_ID_KEY),
+                self.find_first_runner(runner_id=self.node.options.get(PLAYBOOK_RUNNER_OVERRIDE_CONTEXT_ID_KEY),
                                        optional=False).context)
         elif self.node.options.get('no-context', None) is True:
             self.context = None
