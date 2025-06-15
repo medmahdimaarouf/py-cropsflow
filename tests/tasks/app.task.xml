@@ -12,15 +12,15 @@
     <playbook>
         <check-value>
             <map>
-                <mock-value accumulator-accessor="field1"/>
-                <mock-value accumulator-accessor="field2"/>
-                <map accumulator-accessor="map">
-                    <mock-value accumulator-accessor="map_field1"/>
-                    <mock-value accumulator-accessor="map_field2"/>
-                    <list accumulator-accessor="list">
+                <mock-value key="field1"/>
+                <mock-value key="field2"/>
+                <map key="map">
+                    <mock-value key="map_field1"/>
+                    <mock-value key="map_field2"/>
+                    <list key="list">
                         <map>
-                            <mock-value accumulator-accessor="list_f1"/>
-                            <mock-value accumulator-accessor="list_f2"/>
+                            <mock-value key="list_f1"/>
+                            <mock-value key="list_f2"/>
                         </map>
                     </list>
                 </map>

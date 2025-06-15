@@ -1,8 +1,10 @@
+import uuid
 from enum import Enum
 from typing import Dict, List
 
 from cropsflow.common import DecoratorMetaDataType
-from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY, PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, \
+from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY, \
+    PLAYBOOK_ACCUMULATOR_ACCESSOR_OPTION_KEY, \
     PLAYBOOK_IS_ASYNC_OPTION_KEY, \
     PLAYBOOK_IS_SKIPPABLE_OPTION_KEY
 from ..injector import Container
@@ -42,6 +44,7 @@ class PlaybookNode:
 
     def __init__(self, parse_node: ParseNode, container: Container, options: Dict[str, any] = {},
                  parent: 'PlaybookNode' = None):
+        self.id = uuid.uuid4()
         self.parent: 'PlaybookNode' = parent
         self.container: Container = container
         self.options: Dict[str, any] = options

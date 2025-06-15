@@ -1,3 +1,4 @@
+import asyncio
 import gc
 import inspect
 import traceback
@@ -9,7 +10,7 @@ from enum import Enum
 from typing import List, TypeVar, Generic, Callable, Optional, cast
 
 from cropsflow.common.abstracts import TaskContext, Action, Init, Destroy, Pipe, DataAction
-from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY
+from cropsflow.common.constants import PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY, PLAYBOOK_RUNNER_CONTEXT_ID_KEY
 from cropsflow.common.decorators import ActionDecoratorMetaData, DecoratorMetaData, InjectionScope
 from cropsflow.core.builder import PlaybookNode, EPlaybookNodeType
 from cropsflow.core.utils import BehaviorSubject
@@ -18,12 +19,12 @@ from .exceptions import RunnerException
 I = TypeVar('I')
 
 
-class RunnerFlag(Enum):
+class RunnerStatus(Enum):
     READY = 'READY',
     RUNNING = 'RUNNING',
     ERROR = "ERROR",
     STOPPED = 'STOPPED',
-    COMPLETED = 'COMPLETED'
+    TERMINATED = 'TERMINATED'
 
 
 class Runner(Generic[I], ABC):
@@ -33,79 +34,95 @@ class Runner(Generic[I], ABC):
         return self.node.container.metadata
 
     @property
-    def container_class_file(self) -> str:
-        return inspect.getfile(self.container_metadata.target)
+    def container_metadata(self) -> DecoratorMetaData:
+        return self.node.container.metadata
+
+    @property
+    def id(self) -> str:
+        return self.node.options.get('id', None) or self.node.id
 
     def __init__(self, node: PlaybookNode, parent: 'Runner' = None):
         self.node: PlaybookNode = node
         self.parent: 'Runner' = parent
         self.async_runners: List["Runner"] = []
         self.sync_runners: deque["Runner"] = deque()
-        self.flag: BehaviorSubject[RunnerFlag] = BehaviorSubject(RunnerFlag.READY)
+        self.status: BehaviorSubject[RunnerStatus] = BehaviorSubject(RunnerStatus.READY)
         self.instance: I = None
         self.context: TaskContext = None
-        self.stopped: bool = False
 
     @abstractmethod
     async def run(self, context: TaskContext) -> None:
         pass
 
     def stop(self):
-        self.flag.next(RunnerFlag.STOPPED)
+        self.status.next(RunnerStatus.STOPPED)
         for runner in self.sync_runners:
             runner.stop()
 
     def resume(self):
-        self.flag.next(RunnerFlag.RUNNING)
+        self.status.next(RunnerStatus.RUNNING)
         for runner in self.sync_runners:
             runner.resume()
 
     async def run_queue(self, context: TaskContext) -> None:
-        if self.flag.value is RunnerFlag.RUNNING:
-            for child_node in self.node.children:
-                if child_node.type == EPlaybookNodeType.ACTION:
-                    self.sync_runners.append(ActionRunner(node=child_node, parent=self))
-                if child_node.type == EPlaybookNodeType.PIPE:
-                    self.sync_runners.append(PipeRunner(node=child_node, parent=self))
-            while len(self.sync_runners):
-                while self.stopped:
-                    await sleep(500)
-                runner = self.sync_runners.popleft()
-                if runner.node.is_async:
-                    self.async_runners.append(runner)
-                    runner.run(context=deepcopy(context))
-                else:
-                    await runner.run(context=deepcopy(context))
-
-                if runner.flag.value is RunnerFlag.ERROR:
-                    self.flag.next(RunnerFlag.ERROR)
-            gc.collect()
-        else:
-            return context
+        for child_node in self.node.children:
+            if child_node.type == EPlaybookNodeType.ACTION:
+                self.sync_runners.append(ActionRunner(node=child_node, parent=self))
+            if child_node.type == EPlaybookNodeType.PIPE:
+                self.sync_runners.append(PipeRunner(node=child_node, parent=self))
+        while len(self.sync_runners):
+            runner = self.sync_runners.popleft()
+            if runner.node.is_async:
+                self.async_runners.append(runner)
+                runner.run(context=deepcopy(context))
+            else:
+                await runner.run(context=deepcopy(context))
+        gc.collect()
 
     def init(self, context: TaskContext = None, **args) -> None:
         self.instance = self.node.container.injector.resolve(scope=InjectionScope.TRANSIENT, optional=False)
-        self.context = context
         if isinstance(self.instance, Init):
             self.instance.init(args)
-        gc.collect()
 
-    def find_transformer_pipe_runner(self, transformer_pipe_id: str = None) -> Optional["PipeRunner"]:
+        if self.node.options.get(PLAYBOOK_RUNNER_CONTEXT_ID_KEY, None) is not None:
+            self.context = deepcopy(
+                self.find_first_runner(runner_id=self.node.options.get(PLAYBOOK_RUNNER_CONTEXT_ID_KEY),
+                                       optional=False).context)
+        elif self.node.options.get('no-context', None) is True:
+            self.context = None
+        elif self.node.options.get('new-context', None) is True:
+            self.context = TaskContext()
+        else:
+            self.context = context
+
+    def find_first_pipe_runner(self, transformer_pipe_id: str = None, optional: bool = False) -> Optional['PipeRunner']:
         parent: PipeRunner = self.parent
         while parent:
             if isinstance(parent, PipeRunner):
-                if transformer_pipe_id is None or parent.node.options.get("id") == transformer_pipe_id:
+                if transformer_pipe_id is None or parent.id == transformer_pipe_id:
                     return parent
             else:
                 parent = parent.parent
-        if transformer_pipe_id is not None:
+        if transformer_pipe_id is not None and not optional:
             raise Exception(f'Could not locate target accumulator pipe with id {self.node.transformer_pipe_id}')
+        else:
+            return None
+
+    def find_first_runner(self, runner_id: str = None, optional: bool = False) -> Optional['Runner']:
+        parent: PipeRunner = self.parent
+        while parent:
+            if runner_id is None or parent.id == runner_id:
+                return parent
+            else:
+                parent = parent.parent
+        if runner_id is not None and not optional:
+            raise Exception(f'Could not locate target runner node with id {self.node.transformer_pipe_id}')
         else:
             return None
 
     def transform(self):
         if isinstance(self.instance, Pipe) or isinstance(self.instance, DataAction):
-            transformer_pipe_runner: "PipeRunner" = self.find_transformer_pipe_runner(
+            transformer_pipe_runner: "PipeRunner" = self.find_first_pipe_runner(
                 transformer_pipe_id=self.node.options.get(PLAYBOOK_TRANSFORMER_PIPE_ID_OPTION_KEY))
             if transformer_pipe_runner:
                 transformer_pipe_runner.instance.transform(data=self.instance.get_data(), options=self.node.options)
@@ -115,11 +132,19 @@ class Runner(Generic[I], ABC):
             self.instance.destroy(args)
             del self.instance
 
+    async def __check_running_state(self) -> bool:
+        if self.status is RunnerStatus.STOPPED:
+            while self.status is RunnerStatus.STOPPED:
+                await asyncio.sleep(500)
+
+        if self.status.value is RunnerStatus.RUNNING or self.status.value is RunnerStatus.READY:
+            return True
+        else:
+            return False
+
 
 class ActionRunner(Runner[Action]):
     async def run(self, context: TaskContext) -> None:
-        self.flag.next(RunnerFlag.RUNNING)
-
         async def next_callback(ctx: TaskContext) -> None:
             await self.run_queue(context=ctx)
 
@@ -129,13 +154,12 @@ class ActionRunner(Runner[Action]):
             is_auto_next: bool = cast(ActionDecoratorMetaData, self.node.container.metadata).auto_next
 
             self.instance.next_callback: Callable[[TaskContext], None] = next_callback if not is_auto_next else None
-            next_context = await self.instance.run(context=deepcopy(context), options=self.node.options)
+            next_context = await self.instance.run(context=self.context, options=self.node.options)
             if is_auto_next:
                 if next_context is None:
                     raise Exception(f"None context detected for a non auto-next action: {self.node.parse_node.line}")
                 await self.run_queue(context=next_context)
             self.transform()
-            self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed action {self.node.container.get_name()}")
         except Exception as e:
             if not self.node.skippable:
@@ -149,13 +173,11 @@ class ActionRunner(Runner[Action]):
 class PipeRunner(Runner[Pipe]):
 
     async def run(self, context: TaskContext) -> None:
-        self.flag.next(RunnerFlag.RUNNING)
         try:
             print(f"running pipe {self.node.container.get_name()} ...")
             self.init(context=context)
-            await self.run_queue(context=context)
+            await self.run_queue(context=self.context)
             self.transform()
-            self.flag.next(RunnerFlag.COMPLETED)
             print(f"completed pipe {self.node.container.get_name()}")
         except Exception as e:
             if not self.node.skippable:
@@ -170,18 +192,14 @@ class PlayBookRunner(Runner[object]):
 
     async def run(self, context: TaskContext) -> None:
         try:
-            self.flag.next(RunnerFlag.RUNNING)
             self.init()
             await self.run_queue(context=context)
-            self.flag.next(RunnerFlag.COMPLETED)
             self.destroy()
         except RunnerException as e:
             print(f"Playbook: {self.node.parse_node.template_file_name}:{self.node.parse_node.line}", " error : ",
                   e.__str__())
             # e.print_partial_traceback()
             traceback.print_exception(e)
-            self.flag.next(RunnerFlag.ERROR)
         except Exception as e:
             # traceback.print_tb(e.__traceback__)
             traceback.print_exception(e)
-            self.flag.next(RunnerFlag.ERROR)

@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from cropsflow import C, TaskContext, D
+from cropsflow import TaskContext
 from cropsflow.common import task, pipe, Pipe
 
 
@@ -10,7 +10,7 @@ class CheckValuePipe(Pipe):
     def __init__(self):
         super().__init__(data='mock data')
 
-    def accumulate(self, context: TaskContext, options: Dict[str, Any], data: D = None, accessor: str = None) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         self._data = data
 
 
@@ -20,7 +20,7 @@ class MockValuePipe(Pipe):
     def __init__(self):
         super().__init__(data='mock data')
 
-    def accumulate(self, context: TaskContext, options: Dict[str, Any], data: D = None, accessor: str = None) -> None:
+    def transform(self, data: any = None, options: Dict[str, Any] = None) -> None:
         pass
 
 
