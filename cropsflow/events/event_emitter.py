@@ -9,6 +9,7 @@ from typing import Dict, List
 
 from .event_channel import EventChannel
 from cropsflow.common import service, InjectionScope
+from .exceptions import DuplicatedChannelException
 
 
 @service(scope=InjectionScope.DEFAULT)
@@ -44,10 +45,10 @@ class EventEmitter:
         if channel_id.strip() not in self.__channels:
             return self.__channels.setdefault(
                 channel_id.strip(),
-                EventChannel(id=channel_id.strip(), title=title, description=description)
+                EventChannel(channel_id=channel_id.strip(), title=title, description=description)
             )
         else:
-            raise Exception(f"Channel with id '{channel_id.strip()}' is already existing")
+            raise DuplicatedChannelException(channel_id.strip())
 
     def get_channels(self) -> List[EventChannel]:
         """

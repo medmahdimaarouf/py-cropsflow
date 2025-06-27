@@ -12,7 +12,6 @@ and the owner of the channel.
 import datetime
 import time
 from collections import deque
-from getpass import getpass
 from typing import List, Callable
 
 from cropsflow.common.abstracts.event import Event
@@ -47,7 +46,6 @@ class EventChannel:
         self.created_at: float = time.time()
         self.__events: deque[Event] = deque()
         self.__subscribers: List[EventSubscriber] = []
-        self.owner: str = getpass.getuser()
 
     def clear_events(self):
         """
