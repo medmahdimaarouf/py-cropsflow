@@ -1,1 +1,2 @@
 from .dupliacated_channel_exception import DuplicatedChannelException
+from .channel_notfound_exception import ChannelNotFoundException

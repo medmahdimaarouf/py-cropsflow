@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from functools import wraps
 from http import HTTPStatus
 from typing import Callable, Any, Type
@@ -52,7 +53,11 @@ class Router(APIRouter):
                         return JSONResponse(content=response.__dict__, status_code=200)
 
                 except tuple(self._exception_wrappers[func]) as e:
+                    traceback.print_exception(e)
                     return JSONResponse(content=self.error(error=e, status=status).__dict__, status_code=status)
+                except Exception as e:
+                    traceback.print_exception(e)
+                    return JSONResponse(content=self.error(error=e, status=status).__dict__)
 
             return wrapper
 

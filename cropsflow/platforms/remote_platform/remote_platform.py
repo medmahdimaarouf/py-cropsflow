@@ -1,9 +1,13 @@
 import threading
 from typing import Type, Any
+from urllib.request import Request
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from cropsflow.core.application import Application
 from cropsflow.data import DataModule
@@ -11,7 +15,7 @@ from cropsflow.events import EventsModule
 from cropsflow.monitoring import MonitoringModule
 from cropsflow.orchestrator import OrchestratorModule
 from cropsflow.platforms import ApplicationPlatform
-from cropsflow.router import RouterModule
+from cropsflow.router import RouterModule, Router
 from .platform_options import PlatformOptions
 from .routes import get_api_router
 
@@ -24,6 +28,7 @@ class RemoteApplicationPlatform(ApplicationPlatform):
                     module: Type[Any],
                     port: int,
                     allow_origins: list = [],
+                    log_level: str = 'info',
                     args: list[str] = []
                     ) -> Application:
         try:
@@ -44,6 +49,14 @@ class RemoteApplicationPlatform(ApplicationPlatform):
             allow_headers=["*"],
         )
         app.include_router(prefix='/api', router=get_api_router(application=self.application))
+        app.exception_handler(RequestValidationError)
+
+        @app.exception_handler(RequestValidationError)
+        async def validation_exception_handler(request: Request, exc: RequestValidationError):
+            return JSONResponse(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                content=Router.error(error=exc, status=HTTP_422_UNPROCESSABLE_ENTITY).__dict__
+            )
 
         config = uvicorn.Config(app=app, host="localhost", port=options.port, log_level="info")
         self.__server = uvicorn.Server(config)

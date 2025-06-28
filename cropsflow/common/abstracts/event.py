@@ -20,14 +20,23 @@ Usage:
 """
 
 from abc import ABC
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Callable, List
 
 D = TypeVar('D')
 
 
 @dataclass
+class EventSubscription:
+    data: any = field(default=None)
+    target: 'Event' = field(default=None)
+
+
+EventHandler = Callable[[EventSubscription], None]
+
+
 class Event(Generic[D], ABC):
     """
     Abstract base class representing a generic event.
@@ -39,11 +48,35 @@ class Event(Generic[D], ABC):
         D: The type of the data associated with the event.
 
     Attributes:
-        name (str): The name or identifier of the event.
-        date_time (datetime): The timestamp when the event occurred or was recorded.
-        data (D): Payload or metadata associated with the event.
+        id (str): The identifier of the event.
+        name (str): The name  of the event.
+        description (str): The description of the event.
     """
 
-    name: str = field(default_factory=str)
-    date_time: datetime = field(default_factory=datetime)
-    data: D = field(default=None)
+    def __init__(self, event_id: str, name: str, description: str):
+        self.id: str = event_id
+        self.name: str = name
+        self.description: str = description
+        self.__handlers: list[EventHandler] = []
+
+    def add_handler(self, handler: EventHandler) -> 'Event':
+        if handler not in self.__handlers:
+            self.__handlers.append(handler)
+        return self
+
+    def get_handlers(self) -> List[EventHandler]:
+        return deepcopy(self.__handlers)
+
+    def handle(self):
+        def decorator(func: Callable):
+            self.add_handler(func)
+
+        return decorator
+
+    def emit(self, data: any):
+        """
+        Emit an event to this channel. The event's timestamp is set to the current time.
+        All subscribers are notified with the event.
+        """
+        for handler in self.__handlers:
+            handler(data)
