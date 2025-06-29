@@ -5,4 +5,6 @@ from .option import *
 from .pipe import *
 from .service import *
 from .task import *
-
+from .deps import deps
+from .exports import exports
+from .imports import imports

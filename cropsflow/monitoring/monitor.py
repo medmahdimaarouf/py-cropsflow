@@ -5,13 +5,13 @@ The Monitor class allows registering, retrieving, checking, and listing metrics 
 It ensures metric names are unique and provides thread-safe access to stored metrics.
 """
 
-from typing import Dict
+from typing import Dict, Optional
 
 from cropsflow.common.abstracts import Metric
-from cropsflow.common import service, InjectionScope
+from scheduler import AsyncScheduler
+from scheduler.background_scheduler import BackgroundScheduler
 
 
-@service(scope=InjectionScope.DEFAULT)
 class Monitor:
     """
     Monitor class manages a collection of named Metric instances.
@@ -20,14 +20,26 @@ class Monitor:
     check for existence, and list all registered metric names.
     """
 
+    @property
+    def name(self) -> Optional[str]:
+        return getattr(self, '__name', None)
+
+    @property
+    def description(self) -> Optional[str]:
+        return getattr(self, '__description')
+
+    @property
+    def id(self) -> Optional[str]:
+        return getattr(self, '__id')
+
     def __init__(self):
         """
         Initialize a new Monitor with an empty metric collection.
         """
-        self.name: str = ''
-        self.metrix: Dict[str, Metric] = {}
+        self.__metrix: Dict[str, Metric] = {}
+        self.scheduler: AsyncScheduler = AsyncScheduler()
 
-    def register_metric(self, name: str, metric: Metric) -> Metric:
+    def register_metric(self, name: str, metric: Metric, description: str = None) -> Metric:
         """
         Register a new metric by a unique name.
 
@@ -40,13 +52,19 @@ class Monitor:
 
         Raises:
             Exception: If a metric with the given name already exists.
+            :param name: metric name
+            :param metric: metric instance
+            :param description: metric description
         """
-        key = name.strip()
-        if key not in self.metrix:
-            self.metrix[key] = metric
+        metric_id = name.strip().lower().replace('  ', ' ').replace(' ', '-')
+        if metric_id not in self.__metrix:
+            setattr(metric, '__name', metric_id)
+            setattr(metric, '__description', description)
+            setattr(metric, '__id', metric_id)
+            self.__metrix.setdefault(metric_id, metric)
             return metric
         else:
-            raise Exception(f"Unable to add metric: metric name '{key}' already exists")
+            raise Exception(f"Unable to add metric: metric name '{metric_id}' already exists")
 
     def get_metric(self, name: str) -> Metric | None:
         """
@@ -58,7 +76,7 @@ class Monitor:
         Returns:
             Metric | None: The metric if found, otherwise None.
         """
-        return self.metrix.get(name.strip(), None)
+        return self.__metrix.get(name.strip(), None)
 
     def has_metric(self, name: str) -> bool:
         """
@@ -70,7 +88,7 @@ class Monitor:
         Returns:
             bool: True if metric exists, False otherwise.
         """
-        return name.strip() in self.metrix
+        return name.strip() in self.__metrix
 
     def get_metrix(self) -> list[str]:
         """
@@ -79,4 +97,10 @@ class Monitor:
         Returns:
             list[str]: List of metric names.
         """
-        return list(self.metrix.keys())
+        return list(self.__metrix.keys())
+
+    def start(self):
+        pass
+
+    def shutdown(self, wait: bool):
+        pass

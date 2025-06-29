@@ -1,5 +1,7 @@
 from typing import Type, Any
 
+from setproctitle import setproctitle
+
 from cropsflow.data import DataModule
 from cropsflow.events import EventsModule
 from cropsflow.monitoring import MonitoringModule
@@ -15,6 +17,7 @@ class StaticPlatform(ApplicationPlatform):
 
     async def start(self, t: Type[Any], options: ApplicationOptions = ApplicationOptions(),
                     args: list[str] = []) -> Application:
+        setproctitle("CropsFlow application")
         return await self.init(t, options=options,
                                overrides=[RouterModule, OrchestratorModule, MonitoringModule, EventsModule, DataModule])
 
