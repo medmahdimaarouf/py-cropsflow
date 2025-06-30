@@ -14,7 +14,7 @@ class DiscPercentUsageMetric(GaugeMetric):
             self.set(psutil.disk_usage().percent)
 
 
-class DiscTotalMetric(IndicatorMetric[float]):
+class DiscTotalMetric(IndicatorMetric):
     def __init__(self):
         super().__init__(title='CPU Usage', description='Collects CPU usage per %', initial=0)
 
@@ -23,7 +23,7 @@ class DiscTotalMetric(IndicatorMetric[float]):
             return psutil.disk_usage().total
 
 
-class DiscUsedMetric(IndicatorMetric[float]):
+class DiscUsedMetric(IndicatorMetric):
     def __init__(self):
         super().__init__(title='CPU Usage', description='Collects CPU usage per %')
 

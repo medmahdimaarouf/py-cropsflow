@@ -10,11 +10,12 @@ class CPUPercentUsageMetric(GaugeMetric):
         super().__init__(max_value=100, min_value=0)
 
     def collect(self):
+        print('collecting CPUPercentUsageMetric')
         with threading.Lock():
-            self.set(psutil.cpu_percent())
+            return psutil.cpu_percent()
 
 
-class CPUCountMetric(IndicatorMetric[float]):
+class CPUCountMetric(IndicatorMetric):
 
     def __init__(self):
         super().__init__(title='CPU Count', description='Collects CPU count', initial=0)

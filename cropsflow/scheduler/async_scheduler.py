@@ -13,11 +13,14 @@ class AsyncScheduler(BaseScheduler):
         self.__event_loop: AbstractEventLoop = event_loop or asyncio.get_event_loop()
 
     def execute_job(self, job: Job):
+        async def wrap():
+            return job.execute()
+
         try:
             if self.__event_loop.is_running():
-                return asyncio.run_coroutine_threadsafe(job.execute(), self.__event_loop)
+                return asyncio.run_coroutine_threadsafe(wrap(), self.__event_loop)
             else:
-                return self.__event_loop.run_until_complete(job.execute())
+                return self.__event_loop.run_until_complete(wrap())
 
         except Exception as e:
             traceback.print_exception(type(e), e, e.__traceback__)

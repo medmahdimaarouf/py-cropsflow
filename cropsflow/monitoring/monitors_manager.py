@@ -1,6 +1,7 @@
 from typing import Optional
 
 from cropsflow.common import service, InjectionScope
+from .exceptions import DuplicatedMonitorException
 from .monitor import Monitor
 
 
@@ -16,6 +17,16 @@ class MonitorsManager:
             setattr(monitor, '__description', description)
             setattr(monitor, '__id', monitor_id)
             return self.__monitors.setdefault(monitor.id, monitor)
+        else:
+            raise DuplicatedMonitorException()
 
-    def get(self, monitor_id: str) -> Optional[Monitor]:
+    def get_monitor(self, monitor_id: str) -> Optional[Monitor]:
         return self.__monitors.get(monitor_id.strip(), None)
+
+    def start_monitor(self, monitor_id: str) -> None:
+        monitor: Monitor = self.get_monitor(monitor_id=monitor_id)
+        if monitor is not None:
+            monitor.start()
+
+    def get_monitors(self) -> list[str]:
+        return list(self.__monitors.keys())

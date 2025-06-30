@@ -9,10 +9,9 @@ from typing import Dict, Optional
 
 from cropsflow.common.abstracts import Metric
 from scheduler import AsyncScheduler
-from scheduler.background_scheduler import BackgroundScheduler
 
 
-class Monitor:
+class Monitor(AsyncScheduler):
     """
     Monitor class manages a collection of named Metric instances.
 
@@ -36,7 +35,8 @@ class Monitor:
         """
         Initialize a new Monitor with an empty metric collection.
         """
-        self.__metrix: Dict[str, Metric] = {}
+        super().__init__()
+        self.__metrics: Dict[str, Metric] = {}
         self.scheduler: AsyncScheduler = AsyncScheduler()
 
     def register_metric(self, name: str, metric: Metric, description: str = None) -> Metric:
@@ -57,50 +57,45 @@ class Monitor:
             :param description: metric description
         """
         metric_id = name.strip().lower().replace('  ', ' ').replace(' ', '-')
-        if metric_id not in self.__metrix:
-            setattr(metric, '__name', metric_id)
+        if metric_id not in self.__metrics:
+            setattr(metric, '__name', name)
             setattr(metric, '__description', description)
             setattr(metric, '__id', metric_id)
-            self.__metrix.setdefault(metric_id, metric)
+            self.__metrics.setdefault(metric_id, metric)
+            # self.schedule_every(seconds=1000, call_back=metric.collect)
             return metric
         else:
             raise Exception(f"Unable to add metric: metric name '{metric_id}' already exists")
 
-    def get_metric(self, name: str) -> Metric | None:
+    def get_metric(self, metric_id: str) -> Metric | None:
         """
         Retrieve a metric by name.
 
         Args:
-            name (str): The metric name.
+            metric_id (str): The metric id.
 
         Returns:
             Metric | None: The metric if found, otherwise None.
         """
-        return self.__metrix.get(name.strip(), None)
+        return self.__metrics.get(metric_id.strip(), None)
 
-    def has_metric(self, name: str) -> bool:
+    def has_metric(self, metric_id: str) -> bool:
         """
         Check if a metric with the given name is registered.
 
         Args:
-            name (str): The metric name.
+            metric_id (str): The metric id.
 
         Returns:
             bool: True if metric exists, False otherwise.
         """
-        return name.strip() in self.__metrix
+        return metric_id.strip() in self.__metrics
 
-    def get_metrix(self) -> list[str]:
+    def get_metrics(self) -> list[str]:
         """
         Get a list of all registered metric names.
 
         Returns:
             list[str]: List of metric names.
         """
-        return list(self.__metrix.keys())
-
-    def start(self):
-        pass
-
-    def shutdown(self, wait: bool):
-        pass
+        return list(self.__metrics.keys())

@@ -21,10 +21,6 @@ from cropsflow.common.abstracts.event import Event
 class EventChannel:
     """
     Represents an event channel that holds events and notifies subscribers when new events are emitted.
-
-    Attributes:
-        name (str): Human-readable name of the channel.
-        description (str): Optional description of the channel.
     """
 
     @property

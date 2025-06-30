@@ -93,16 +93,11 @@ class GaugeMetric(Metric[float], ABC):
 
 
 class IndicatorMetric(Metric[float], ABC):
-    def __init__(self, name: str, description: str, initial: float = 0, amount: float = None):
+    def __init__(self, initial: float = 0, amount: float = None):
         """
         Initialize the gauge metric with a title, description, and default value.
-
-        Args:
-            name (str): The name of the metric.
-            description (str): A brief description of the metric.
-            amount (int): The max gauge value of the metric.
         """
-        super().__init__(name=name, description=description, initial=initial)
+        super().__init__(initial=initial)
         self.amount: float = amount
 
 
