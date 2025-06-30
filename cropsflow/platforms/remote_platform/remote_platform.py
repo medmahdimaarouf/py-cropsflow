@@ -1,4 +1,5 @@
 import threading
+import traceback
 from typing import Type, Any
 from urllib.request import Request
 
@@ -6,6 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from setproctitle import setproctitle
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -32,12 +34,14 @@ class RemoteApplicationPlatform(ApplicationPlatform):
                     args: list[str] = []
                     ) -> Application:
         try:
+            setproctitle("CropsFlow application")
             options = PlatformOptions(port=port, allow_origins=allow_origins)
             overrides: list = [RouterModule, OrchestratorModule, MonitoringModule, EventsModule, DataModule]
             await self.init(module, options=options, overrides=overrides)
             await self.__start_server_thread(options)
         except Exception as e:
             print(f"[start] Error: {e.__str__()}")
+            traceback.print_exception(e)
 
     async def __start_server_thread(self, options: PlatformOptions) -> None:
         app = FastAPI(debug=True, title='CropsFlow Gateway API')

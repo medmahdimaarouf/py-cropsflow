@@ -27,7 +27,7 @@ class EventEmitter:
         """
         self.__channels: Dict[str, EventChannel] = {}
 
-    def create_channel(self, channel_id: str, name: str, description: str = '') -> EventChannel:
+    def create_channel(self, name: str, description: str = '') -> EventChannel:
         """
         Create a new EventChannel with the given ID, name, and optional description.
 
@@ -42,13 +42,11 @@ class EventEmitter:
         Raises:
             Exception: If a channel with the given ID already exists.
         """
-        if channel_id.strip() not in self.__channels:
-            return self.__channels.setdefault(
-                channel_id.strip(),
-                EventChannel(channel_id=channel_id.strip(), name=name, description=description)
-            )
+        channel = EventChannel(name=name, description=description)
+        if channel.id not in self.__channels:
+            return self.__channels.setdefault(channel.id, channel)
         else:
-            raise DuplicatedChannelException(channel_id.strip())
+            raise DuplicatedChannelException(channel.id.strip())
 
     def get_channels(self) -> List[EventChannel]:
         """

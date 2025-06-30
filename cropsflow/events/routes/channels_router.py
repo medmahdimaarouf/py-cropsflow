@@ -20,8 +20,7 @@ def get_channels_router(event_emitter: EventEmitter):
     @channels_router.post(path='')
     @channels_router.handle_exception(DuplicatedChannelException, 401)
     def create_channel(channel: EventChannelModel):
-        channel = event_emitter.create_channel(channel_id=channel.get_channel_id(), name=channel.name,
-                                               description=channel.description)
+        channel = event_emitter.create_channel(name=channel.name, description=channel.description)
         return Router.success(data={
             "id": channel.id,
             "name": channel.name,

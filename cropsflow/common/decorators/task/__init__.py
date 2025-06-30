@@ -5,7 +5,8 @@ import inspect
 from ...constants import *
 from .metadata import *
 
-def task(template_path: str = '') -> Callable:
+
+def task(template_path: str = None, built_in: bool = False) -> Callable:
     """
         This Action decorator marks a class as a task and assigns a template URI.
 

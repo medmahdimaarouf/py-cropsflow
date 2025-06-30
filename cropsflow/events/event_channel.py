@@ -21,28 +21,31 @@ from cropsflow.common.abstracts.event import Event
 class EventChannel:
     """
     Represents an event channel that holds events and notifies subscribers when new events are emitted.
-
-    Attributes:
-        id (str): Unique identifier for the channel.
-        name (str): Human-readable name of the channel.
-        description (str): Optional description of the channel.
-        created_at (float): Timestamp of channel creation (epoch seconds).
-        owner (str): Username of the owner of the channel.
     """
 
-    def __init__(self, channel_id: str, name: str, description: str = ''):
+    @property
+    def id(self) -> str:
+        return self.__name.strip().replace(' ', ' ').replace(' ', '-').lower()
+
+    @property
+    def name(self) -> str:
+        return self.__name.strip()
+
+    @property
+    def description(self) -> str:
+        self.description or ''
+
+    def __init__(self, name: str, description: str = ''):
         """
         Initialize a new EventChannel instance.
 
         Args:
-            channel_id (str): Unique identifier for the channel.
             name (str): name of the channel.
             description (str, optional): Description of the channel. Defaults to an empty string.
         """
-        self.id: str = channel_id
-        self.name: str = name
-        self.description: str = description
-        self.created_at: float = time.time()
+        self.__name: str = name
+        self.__description: str = description
+        self.__created_at: float = time.time()
         self.__events: dict[str, Event] = {}
 
     def clear(self):

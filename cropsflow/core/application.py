@@ -1,10 +1,9 @@
+import importlib
 import inspect
 import sys
 from typing import Any, Type, Dict
 
-from cropsflow.common.abstracts import Init
-
-from cropsflow.common.decorators import InjectionScope, service, ModuleDef
+from cropsflow.common import Init, InjectionScope, service, ModuleDef
 from cropsflow.common.utils import InjectionToken
 from .injector import Container
 from .injector.module import Module
@@ -23,17 +22,13 @@ class Application(Container):
         self.scanner: DependenciesScanner = DependenciesScanner(app=self)
         self.register_core_provider(token=Application, instance=self)
 
-    def get_orchestrator(self) -> 'Orchestrator':
-        from cropsflow.orchestrator.orchestrator import Orchestrator
-        return self.get(token=Orchestrator).resolve(scope=InjectionScope.DEFAULT, optional=True)
-
-    def get_monitor(self):
-        from cropsflow.monitoring import Monitor
-        return self.get(token=Monitor).resolve(scope=InjectionScope.DEFAULT, optional=True)
-
-    def get_data_sources(self):
-        from cropsflow.data import DataSourcesRegister
-        return self.get(token=DataSourcesRegister).resolve(scope=InjectionScope.DEFAULT, optional=True)
+    def register_lazy(self, package_name: str, class_name: str):
+        try:
+            package = importlib.import_module(package_name)
+            cls = package.__getattr__(class_name)
+            self.register(token=cls, dep=cls)
+        except ModuleNotFoundError:
+            print(f"Module '{class_name}' from '{package_name}' not found.")
 
     def get_module(self, meta_type: Type[Any]) -> Container:
         return self.modules.get(meta_type)
