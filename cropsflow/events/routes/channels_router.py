@@ -13,7 +13,6 @@ def get_channels_router(event_emitter: EventEmitter):
         return Router.success(data=[{
             "id": channel.id,
             "name": channel.name,
-            "createdAt": channel.created_at,
             "description": channel.description
         } for channel in event_emitter.get_channels()])
 
@@ -24,7 +23,6 @@ def get_channels_router(event_emitter: EventEmitter):
         return Router.success(data={
             "id": channel.id,
             "name": channel.name,
-            "createdAt": channel.created_at,
             "description": channel.description
         })
 
@@ -36,7 +34,6 @@ def get_channels_router(event_emitter: EventEmitter):
             return Router.success(data={
                 "id": channel.id,
                 "name": channel.name,
-                "createdAt": channel.created_at,
                 "description": channel.description
             })
         else:

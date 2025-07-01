@@ -24,18 +24,18 @@ class EventChannel:
     """
 
     @property
-    def id(self) -> str:
-        return self.__name.strip().replace(' ', ' ').replace(' ', '-').lower()
+    def id(self) -> Optional[str]:
+        return getattr(self, '__id', None)
 
     @property
-    def name(self) -> str:
-        return self.__name.strip()
+    def name(self) -> Optional[str]:
+        return getattr(self, '__name', None)
 
     @property
-    def description(self) -> str:
-        self.description or ''
+    def description(self) -> Optional[str]:
+        return getattr(self, '__description', None)
 
-    def __init__(self, name: str, description: str = ''):
+    def __init__(self):
         """
         Initialize a new EventChannel instance.
 
@@ -43,8 +43,6 @@ class EventChannel:
             name (str): name of the channel.
             description (str, optional): Description of the channel. Defaults to an empty string.
         """
-        self.__name: str = name
-        self.__description: str = description
         self.__created_at: float = time.time()
         self.__events: dict[str, Event] = {}
 
