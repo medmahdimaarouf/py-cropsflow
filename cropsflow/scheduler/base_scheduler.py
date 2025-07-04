@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from copy import deepcopy
 from threading import Thread, Event, Condition
-from typing import Callable, List, Optional, Dict, Any
+from typing import Callable, List, Optional, Dict, Any, Union
 import time
 import logging
 
@@ -103,6 +103,11 @@ class BaseScheduler(UIDataModel, ABC):
             self.__wakeup_condition.notify()
         return job
 
+    def remove_schedule(self, schedule: Union[Callable, Job]):
+        with self.__wakeup_condition:
+            self.__jobs.remove(schedule)
+            self.__wakeup_condition.notify()
+
     def start(self) -> None:
         """Start the scheduler thread"""
         if self.__is_running:
@@ -111,7 +116,7 @@ class BaseScheduler(UIDataModel, ABC):
         self.__should_stop.clear()
         self.__thread = Thread(
             target=self.__run_loop,
-            daemon=False,
+            daemon=True,
             name=self.name or 'CropsFlow unnamed scheduler'
         )
         self.__is_running = True

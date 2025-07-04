@@ -1,6 +1,7 @@
 import time
+import traceback
 from dataclasses import dataclass, field
-from typing import Callable, Any, Dict, Optional
+from typing import Callable, Any, Dict, Optional, final
 from enum import Enum, auto
 
 from .exceptions import IntervalError
@@ -19,7 +20,13 @@ class JobState(Enum):
     FAILED = auto()
 
 
-@dataclass
+'''
+    @todo: freeze this class access 
+'''
+
+
+@final
+@dataclass()
 class JobTiming:
     interval: int  # in milliseconds
     starting_from: int = field(default_factory=now_ms)
@@ -42,7 +49,7 @@ class JobTiming:
 
     def __str__(self) -> str:
         return (f"JobTiming(interval={self.interval}ms, "
-                f"next_run={time.strftime('%Y-%m-%d %H:%M:%S', time.localtime((self.starting_from + self.interval)/1000))}, "
+                f"next_run={time.strftime('%Y-%m-%d %H:%M:%S', time.localtime((self.starting_from + self.interval) / 1000))}, "
                 f"remains={self.remains}ms)")
 
 
@@ -92,6 +99,7 @@ class Job:
             self._timing.last_executed = now_ms()
             return result
         except Exception as e:
+            traceback.print_exception(e)
             self.state = JobState.FAILED
             self.last_error = e
             raise
@@ -101,6 +109,9 @@ class Job:
                 f"interval={self._timing.interval}ms, "
                 f"state={self.state.name}, "
                 f"run_once={self.run_once})")
+
+    def __eq__(self, other):
+        return self is other or self._callback == other
 
 
 class PeriodicJob(Job):

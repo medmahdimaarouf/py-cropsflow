@@ -42,11 +42,14 @@ class EventEmitter:
         Raises:
             Exception: If a channel with the given ID already exists.
         """
-        channel = EventChannel(name=name, description=description)
+        channel = EventChannel()
+        setattr(channel, '__id', name.strip().replace(' ', ' ').replace(' ', '-').lower())
+        setattr(channel, '__name', name.strip())
+        setattr(channel, '__description', description.strip())
         if channel.id not in self.__channels:
             return self.__channels.setdefault(channel.id, channel)
         else:
-            raise DuplicatedChannelException(channel.id.strip())
+            raise DuplicatedChannelException(channel.id)
 
     def get_channels(self) -> List[EventChannel]:
         """

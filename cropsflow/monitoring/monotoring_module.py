@@ -66,9 +66,9 @@ class MonitoringModule(Init):
         """
         Initialize the MonitoringModule by registering metrics and optionally binding routes.
         """
-        self.bind_routes()
         self.register_default_monitors()
-        # self.restart_monitors()
+        self.bind_routes()
+        self.restart_monitors()
 
     def bind_routes(self):
         if self.router is not None:

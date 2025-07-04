@@ -10,7 +10,7 @@ setup(
     author="Med Mahdi Maarouf",
     author_email="info@cropsflow.com",
     url="https://github.com/cropsflow/cropsflow",  # Your project URL
-    packages=find_packages(include=["cropsflow", "cropsflow.*"]),
+    packages=find_packages(include=["cropsflow", "cropsflow.*", "tests", "tests.*"]),
     install_requires=[
         'lxml',
         'fastapi'
