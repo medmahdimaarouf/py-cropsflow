@@ -14,11 +14,13 @@ class AsyncScheduler(BaseScheduler):
 
     def execute_job(self, job: Job):
         async def wrap():
-            return job.execute()
+            return await job.execute()
 
         try:
             if self.__event_loop.is_running():
                 return asyncio.run_coroutine_threadsafe(wrap(), self.__event_loop)
+            elif self.__event_loop.is_closed():
+                return None
             else:
                 return self.__event_loop.run_until_complete(wrap())
 
