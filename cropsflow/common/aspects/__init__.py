@@ -1,2 +1,2 @@
-from .decorators import after, before, catch
+from .decorators import after, before, catch, result
 from .aspect import Aspect
