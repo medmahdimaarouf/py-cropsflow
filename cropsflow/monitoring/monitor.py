@@ -5,10 +5,10 @@ The Monitor class allows registering, retrieving, checking, and listing metrics 
 It ensures metric names are unique and provides thread-safe access to stored metrics.
 """
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Callable
 
 from cropsflow.common.abstracts import Metric
-from scheduler import AsyncScheduler
+from cropsflow.scheduler import AsyncScheduler
 
 
 class Monitor(AsyncScheduler):
@@ -38,6 +38,7 @@ class Monitor(AsyncScheduler):
         super().__init__()
         self.__metrics: Dict[str, Metric] = {}
         self.scheduler: AsyncScheduler = AsyncScheduler()
+        self.__watchers: list[Callable[[str, any], None]] = []
 
     def register_metric(self, name: str, metric: Metric, description: str = None) -> Metric:
         """
@@ -62,7 +63,7 @@ class Monitor(AsyncScheduler):
             setattr(metric, '__description', description)
             setattr(metric, '__id', metric_id)
             self.__metrics.setdefault(metric_id, metric)
-            # self.schedule_every(seconds=1000, call_back=metric.collect)
+            self.schedule_every(seconds=1000, call_back=metric.collect)  # collect should be wrapped
             return metric
         else:
             raise Exception(f"Unable to add metric: metric name '{metric_id}' already exists")

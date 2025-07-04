@@ -36,9 +36,28 @@ def after(target: Callable) -> Callable[[F], F]:
 
         @functools.wraps(fn_ref)
         def wrapper(*args, **kwargs):
-            result = fn_ref(*args, **kwargs)  # Call the original/wrapped function
+            return_value = fn_ref(*args, **kwargs)  # Call the original/wrapped function
             fn(*args, **kwargs)  # Execute the advice afterward
-            return result
+            return return_value
+
+        update_wrapper(get_function_bound(target), target, wrapper)
+        return fn
+
+    return decorator
+
+
+def result(target: Callable) -> Callable[[F], F]:
+    """Decorator for after advice (supports multiple aspects)."""
+
+    def decorator(fn: F) -> F:
+        fn_ref = get_wrapped_function(target)
+        if fn_ref is None:
+            raise ValueError(f'Target function not found: {target.__name__}')
+
+        @functools.wraps(fn_ref)
+        def wrapper(*args, **kwargs):
+            return_value = fn_ref(*args, **kwargs)
+            return fn(return_value, *args, *kwargs)
 
         update_wrapper(get_function_bound(target), target, wrapper)
         return fn
