@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CropsFlow | Python Automation Framework</title>
+    <meta
+      name="description"
+      content="CropsFlow is a Python automation framework for modular services, dependency injection, scheduling, task orchestration, and workflow automation."
+    />
+    <style>
+      :root {
+        --bg: #07111d;
+        --bg-soft: #0d1b2a;
+        --panel: #101f31;
+        --panel-2: #16283d;
+        --card: rgba(255,255,255,0.02);
+        --text: #e6edf7;
+        --muted: #a9bbd0;
+        --primary: #5eead4;
+        --primary-2: #7dd3fc;
+        --accent: #c084fc;
+        --success: #34d399;
+        --warning: #fbbf24;
+        --border: rgba(255,255,255,0.08);
+        --shadow: 0 20px 45px rgba(14, 30, 48, 0.45);
+        --radius: 20px;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(94, 234, 212, 0.12), transparent 28%),
+          radial-gradient(circle at top right, rgba(192, 132, 252, 0.14), transparent 22%),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+      }
+
+      a { color: inherit; text-decoration: none; }
+      img { max-width: 100%; display: block; }
+      code, pre {
+        font-family: "Consolas", "SFMono-Regular", monospace;
+      }
+
+      .container {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(16px);
+        background: rgba(7, 17, 29, 0.8);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 74px;
+        gap: 22px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        display: grid;
+        place-items: center;
+        color: #061018;
+        font-weight: 900;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        color: var(--muted);
+      }
+
+      .nav-links a {
+        transition: color 0.2s ease;
+      }
+
+      .nav-links a:hover { color: var(--text); }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #061018;
+        box-shadow: var(--shadow);
+      }
+
+      .btn-secondary {
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        border-color: var(--border);
+      }
+
+      .hero {
+        padding: 70px 0 40px;
+      }
+
+      .hero-inner {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: center;
+        gap: 42px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(94, 234, 212, 0.08);
+        border: 1px solid rgba(94, 234, 212, 0.18);
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 0.82rem;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 5vw, 5rem);
+        line-height: 1.06;
+        margin: 22px 0 18px;
+        letter-spacing: -0.05em;
+      }
+
+      .lead {
+        max-width: 620px;
+        font-size: 1.08rem;
+        color: var(--muted);
+        margin-bottom: 30px;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-bottom: 26px;
+      }
+
+      .hero-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        margin-top: 18px;
+      }
+
+      .metric {
+        min-width: 130px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 1.7rem;
+        margin-bottom: 4px;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .dashboard {
+        background: linear-gradient(180deg, rgba(18,31,46,0.92), rgba(10,18,29,0.92));
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      .window {
+        background: #0b1420;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .window-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        background: rgba(255,255,255,0.02);
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .dot.red { background: #ff5f57; }
+      .dot.yellow { background: #ffbd2e; }
+      .dot.green { background: #28c840; }
+
+      .window-body {
+        padding: 20px;
+      }
+
+      .terminal {
+        background: transparent;
+        color: var(--text);
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .terminal .comment { color: #7dd3fc; }
+      .terminal .func { color: #c084fc; }
+      .terminal .str { color: #86efac; }
+      .terminal .key { color: #fbbf24; }
+
+      .section {
+        padding: 44px 0;
+      }
+
+      .heading {
+        max-width: 680px;
+        margin-bottom: 24px;
+      }
+
+      .heading h2 {
+        font-size: clamp(2rem, 3vw, 3rem);
+        letter-spacing: -0.04em;
+        margin: 0 0 12px;
+      }
+
+      .heading p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 22px 18px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+      }
+
+      .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, rgba(94,234,212,0.12), rgba(125,211,252,0.15));
+        color: var(--primary);
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+      }
+
+      .card h3 {
+        margin: 0 0 10px;
+        font-size: 1.2rem;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+
+      .panel {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 26px 22px;
+      }
+
+      .list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 0;
+        color: var(--muted);
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+      }
+
+      .list li:last-child { border-bottom: none; }
+
+      .check {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(52, 211, 153, 0.12);
+        color: var(--success);
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        flex-shrink: 0;
+      }
+
+      .code-wrap {
+        overflow: auto;
+        border-radius: 18px;
+        background: #0a141d;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      pre {
+        margin: 0;
+        padding: 22px 18px;
+        color: #dfeaf8;
+        font-size: 0.94rem;
+        overflow-x: auto;
+      }
+
+      .pill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .pill {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .cta {
+        padding: 50px 0 80px;
+      }
+
+      .cta-box {
+        background: linear-gradient(135deg, rgba(94,234,212,0.08), rgba(192,132,252,0.08));
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 36px 30px;
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: center;
+      }
+
+      .cta-box h3 {
+        margin: 0 0 8px;
+        font-size: clamp(1.8rem, 3vw, 2.5rem);
+        letter-spacing: -0.04em;
+      }
+
+      .cta-box p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 30px 0 34px;
+        color: var(--muted);
+      }
+
+      .footer-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 980px) {
+        .hero-inner,
+        .split,
+        .cards {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .hero-inner {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .nav { flex-wrap: wrap; padding: 14px 0; }
+        .nav-links {
+          width: 100%;
+          order: 3;
+          justify-content: center;
+          gap: 12px 18px;
+        }
+        .cards,
+        .split {
+          grid-template-columns: 1fr;
+        }
+        .cta-box {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <a href="#top" class="brand" aria-label="CropsFlow home">
+          <span class="brand-mark">C</span>
+          <span>CropsFlow</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="#introduction">Introduction</a>
+          <a href="#features">Features</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#installation">Installation</a>
+          <a href="#examples">Examples</a>
+          <a href="#usage">Usage</a>
+          <a href="#contributing">Contributing</a>
+          <a href="#license">License</a>
+        </nav>
+
+        <div class="nav-actions">
+          <a class="btn btn-secondary" href="#installation">Get started</a>
+          <a class="btn btn-primary" href="https://github.com/medmahdimaarouf/py-cropsflow" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="container hero-inner">
+          <div>
+            <span class="eyebrow">Python Automation Framework</span>
+            <h1>Build modular, scalable automation workflows.</h1>
+            <p class="lead">
+              CropsFlow is a Python framework for composing automation systems with dependency injection,
+              reusable actions, task-driven execution, modular services, routing, scheduling, and orchestration.
+            </p>
+
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#installation">Install now</a>
+              <a class="btn btn-secondary" href="#examples">See examples</a>
+            </div>
+
+            <div class="hero-metrics">
+              <div class="metric">
+                <strong>Python</strong>
+                <span>Core language</span>
+              </div>
+              <div class="metric">
+                <strong>Modular</strong>
+                <span>Service design</span>
+              </div>
+              <div class="metric">
+                <strong>Scalable</strong>
+                <span>Automation runtime</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard" aria-label="Framework dashboard preview">
+            <div class="window">
+              <div class="window-header">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <div class="window-body">
+                <div class="terminal">
+<span class="comment"># bootstrap application</span>
+<span class="func">from</span> cropsflow.core.application <span class="func">import</span> Application
+
+app = Application()
+<span class="comment"># scan modules and initialize services</span>
+<span class="func">await</span> app.bootstrap(module=AppModule)
+
+<span class="comment"># schedule recurring jobs</span>
+<span class="func">@scheduler</span>.every(seconds=10)
+<span class="func">def</span> check_status():
+    <span class="func">print</span>(<span class="str">"Automation running"</span>)
+
+<span class="comment"># route and respond</span>
+<span class="func">@router.get</span>(<span class="str">"/health"</span>)
+<span class="func">async def</span> health():
+    <span class="func">return</span> Router.success({<span class="key">"status"</span>: <span class="str">"ok"</span>})
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="introduction">
+        <div class="container">
+          <div class="heading">
+            <h2>Introduction</h2>
+            <p>
+              CropsFlow is designed for engineers who need a structured way to create automation systems using reusable components,
+              dependency-driven initialization, workflows, and service orchestration.
+            </p>
+          </div>
+
+          <div class="split">
+            <div class="panel">
+              <h3>Why CropsFlow?</h3>
+              <ul class="list">
+                <li><span class="check">✓</span> Modular composition for large automation systems</li>
+                <li><span class="check">✓</span> Dependency injection for clean service wiring</li>
+                <li><span class="check">✓</span> Reusable actions, pipes, and task templates</li>
+                <li><span class="check">✓</span> Scheduling and periodic job execution</li>
+                <li><span class="check">✓</span> Event-driven infrastructure</li>
+                <li><span class="check">✓</span> FastAPI router integration</li>
+              </ul>
+            </div>
+
+            <div class="panel">
+              <h3>Core developer workflow</h3>
+              <ul class="list">
+                <li><span class="check">✓</span> Declare services with decorators</li>
+                <li><span class="check">✓</span> Scan dependencies and bootstrap modules</li>
+                <li><span class="check">✓</span> Build actions and task pipelines</li>
+                <li><span class="check">✓</span> Schedule jobs and orchestrate tasks</li>
+                <li><span class="check">✓</span> Expose APIs with router integrations</li>
+                <li><span class="check">✓</span> Connect events and automation workers</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="container">
+          <div class="heading">
+            <h2>Framework features</h2>
+            <p>CropsFlow combines automation, modularity, and runtime orchestration into a single Python toolkit.</p>
+          </div>
+
+          <div class="cards">
+            <article class="card">
+              <div class="icon-box">⚙️</div>
+              <h3>Dependency Injection</h3>
+              <p>Resolve services and providers through metadata-driven runtime scanning.</p>
+            </article>
+
+            <article class="card">
+              <div class="icon-box">🧩</div>
+              <h3>Modular Architecture</h3>
+              <p>Organize logic into reusable modules with declarations, imports, and exports.</p>
+            </article>
+
+            <article class="card">
+              <div class="icon-box">🕒</div>
+              <h3>Scheduler</h3>
+              <p>Run recurring or delayed jobs with a built-in scheduler system.</p>
+            </article>
+
+            <article class="card">
+              <div class="icon-box">🔀</div>
+              <h3>Router Integration</h3>
+              <p>Serve APIs with FastAPI-based routing and structured responses.</p>
+            </article>
+
+            <article class="card">
+              <div class="icon-box">🧠</div>
+              <h3>Actions & Pipes</h3>
+              <p>Create reusable automation units and data transformation pipelines.</p>
+            </article>
+
+            <article class="card">
+              <div class="icon-box">📦</div>
+              <h3>Task Templates</h3>
+              <p>Define task metadata and flow using XML-based task templates.</p>
+            </article>
+
+            <article class="card">
+              <div class="icon-box">📣</div>
+              <h3>Events</h3>
+              <p>Connect application components through event emitters and channels.</p>
+            </article>
+
+            <article class="card">
+              <div class="icon-box">🤖</div>
+              <h3>Orchestration</h3>
+              <p>Coordinate worker execution and automation pipelines across workloads.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="architecture">
+        <div class="container">
+          <div class="heading">
+            <h2>Architecture</h2>
+            <p>The framework is structured around runtime composition, dependency resolution, and automation workers.</p>
+          </div>
+
+          <div class="split">
+            <div class="panel">
+              <h3>Core components</h3>
+              <ul class="list">
+                <li><span class="check">✓</span> <strong>Application</strong> – bootstraps the framework and resolves dependencies</li>
+                <li><span class="check">✓</span> <strong>Container / Injector</strong> – manages service lifecycle and resolution</li>
+                <li><span class="check">✓</span> <strong>Common Module</strong> – exposes shared actions and pipes</li>
+                <li><span class="check">✓</span> <strong>Scheduler</strong> – runs recurring and delayed tasks</li>
+                <li><span class="check">✓</span> <strong>Router</strong> – handles HTTP APIs and structured responses</li>
+                <li><span class="check">✓</span> <strong>Orchestrator</strong> – manages task workers and job flows</li>
+              </ul>
+            </div>
+
+            <div class="panel">
+              <h3>Typical app lifecycle</h3>
+              <ul class="list">
+                <li><span class="check">✓</span> Define services, actions, pipes, and modules</li>
+                <li><span class="check">✓</span> Register and scan metadata at runtime</li>
+                <li><span class="check">✓</span> Resolve dependencies and initialize modules</li>
+                <li><span class="check">✓</span> Run scheduled jobs or workers</li>
+                <li><span class="check">✓</span> Expose routes and handle responses</li>
+                <li><span class="check">✓</span> Publish or consume events as needed</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="installation">
+        <div class="container">
+          <div class="heading">
+            <h2>Installation</h2>
+            <p>Install CropsFlow quickly and start building automation workflows immediately.</p>
+          </div>
+
+          <div class="code-wrap">
+            <pre><code>pip install cropsflow</code></pre>
+          </div>
+
+          <div class="pill-list" style="margin-top: 20px;">
+            <span class="pill">Python 3</span>
+            <span class="pill">FastAPI-ready</span>
+            <span class="pill">Modular runtime</span>
+            <span class="pill">Task orchestration</span>
+            <span class="pill">Scheduler support</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="examples">
+        <div class="container">
+          <div class="heading">
+            <h2>Examples</h2>
+            <p>Common patterns used throughout the framework.</p>
+          </div>
+
+          <div class="split">
+            <div class="panel">
+              <h3>Service example</h3>
+              <div class="code-wrap">
+                <pre><code>from cropsflow.common import service, InjectionScope
+
+@service(scope=InjectionScope.DEFAULT)
+class Driver:
+    def __init__(self):
+        pass</code></pre>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Action example</h3>
+              <div class="code-wrap">
+                <pre><code>from cropsflow.common import action, option, inject
+from cropsflow.common.abstracts import Action
+
+@action(selector='my-pipe')
+@option(key='my-option', meta_type=str)
+class MyAction(Action):
+    @inject(arg_name='driver', token=Driver)
+    def __init__(self, driver: Driver):
+        self.driver = driver
+
+    def start(self, context, options={}):
+        return {"status": "ok"}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="usage">
+        <div class="container">
+          <div class="heading">
+            <h2>Usage</h2>
+            <p>Build reusable modules, initialize your app, schedule work, and expose services through routing.</p>
+          </div>
+
+          <div class="panel">
+            <div class="code-wrap">
+              <pre><code>import asyncio
+from cropsflow.core.application import Application
+
+async def main():
+    app = Application()
+    # await app.bootstrap(module=AppModule)
+    print("Application initialized")
+
+asyncio.run(main())</code></pre>
+            </div>
+          </div>
+
+          <div class="split" style="margin-top: 22px;">
+            <div class="panel">
+              <h3>Scheduling</h3>
+              <div class="code-wrap">
+                <pre><code>from cropsflow.scheduler import BackgroundScheduler
+
+scheduler = BackgroundScheduler()
+
+@scheduler.every(seconds=10)
+def check_status():
+    print("Running every 10 seconds")</code></pre>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Router</h3>
+              <div class="code-wrap">
+                <pre><code>from cropsflow.router import Router
+from fastapi import FastAPI
+
+app = FastAPI()
+router = Router(prefix="/api")
+
+@router.get("/health")
+async def health():
+    return Router.success({"status": "ok"})</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="contributing">
+        <div class="container">
+          <div class="heading">
+            <h2>Contributing</h2>
+            <p>Contributions are welcome. Help improve the framework with new features, documentation, and fixes.</p>
+          </div>
+
+          <div class="panel">
+            <ul class="list">
+              <li><span class="check">✓</span> Fork the project and create a feature branch</li>
+              <li><span class="check">✓</span> Add tests for any logic changes</li>
+              <li><span class="check">✓</span> Keep the code style consistent and readable</li>
+              <li><span class="check">✓</span> Submit a clean pull request with clear documentation</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta" id="license">
+        <div class="container">
+          <div class="cta-box">
+            <div>
+              <h3>Apache 2 License</h3>
+              <p>This project is licensed under the Apache License, Version 2.0.</p>
+            </div>
+            <a class="btn btn-primary" href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noreferrer">View license</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container footer-row">
+        <div>
+          <strong>CropsFlow</strong> © 2026
+        </div>
+        <div>
+          <a href="#introduction">Introduction</a> •
+          <a href="#features">Features</a> •
+          <a href="#installation">Installation</a> •
+          <a href="#usage">Usage</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
