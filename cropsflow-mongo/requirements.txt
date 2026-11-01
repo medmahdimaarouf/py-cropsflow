@@ -1,0 +1,2 @@
+-e C:/Users/msi/Desktop/CropsFlow/workspace/cropsflow
+pymongo~=4.10.1

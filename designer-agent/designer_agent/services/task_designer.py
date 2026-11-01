@@ -1,0 +1,2 @@
+class TaskDesigner:
+    pass

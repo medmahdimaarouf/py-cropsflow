@@ -1,0 +1,4 @@
+-e C:/Users/msi/Desktop/CropsFlow/workspace/cropsflow
+-e C:/Users/msi/Desktop/CropsFlow/workspace/cropsflow-dom
+-e C:/Users/msi/Desktop/CropsFlow/workspace/cropsflow-json
+requests

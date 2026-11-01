@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task>
+    <title>Test task</title>
+    <description>
+        Test task
+    </description>
+    <playbook>
+        <mongo-create-dataset-action dataset="test"  drop="True">
+            <mongo-dataset-insert-pipe dataset="test">
+                <map>
+                    <text value="Med Mahdi" accumulator-accessor="firstName"/>
+                    <text value="Maarouf" accumulator-accessor="lastName"/>
+                    <decimal value="21" accumulator-accessor="age"/>
+                </map>
+            </mongo-dataset-insert-pipe>
+        </mongo-create-dataset-action>
+    </playbook>
+</task>
